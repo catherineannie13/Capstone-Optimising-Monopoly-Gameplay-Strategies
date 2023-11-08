@@ -91,8 +91,7 @@ class Street:
         return f'{self.name} is one of the {self.num_in_group} properties in the {self.group} set located at position {self.loc} on the Monopoly board \
                 \n and can be purchased for ${self.price} with a house price of ${self.house_price}. Rent prices are as follows: \n Rent: {self.rent} \n Double rent: {self.double_rent} \
                 \n Rent 1 house: {self.house_rent[0]} \n Rent 2 houses: {self.house_rent[1]} \n Rent 3 houses: {self.house_rent[2]} \n Rent 4 houses: {self.house_rent[3]} \
-                \n Rent hotel: {self.hotel_rent} \n The property is currently owned by {self.owner.name if self.owner else "no-one"}, is{"" if self.is_mortgaged else " not"} mortgaged \
-                \n and has {self.num_houses} houses and {1 if self.hotel else 0} hotels.'
+                \n Rent hotel: {self.hotel_rent} \n The property is currently owned by {self.owner.name if self.owner else "no-one"}, is{"" if self.is_mortgaged else " not"} mortgaged and has {self.num_houses} houses and {1 if self.hotel else 0} hotels.'
 
     def __lt__(self, other):
         """

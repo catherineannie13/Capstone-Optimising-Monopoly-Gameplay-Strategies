@@ -71,7 +71,7 @@ class MCTS:
                 action = random.choice(legal_actions)
                 state = state.perform_action(action)
 
-            # TO DO: edit to raise error (if the state is not terminal, there should be legal actions to take)
+            # TO DO: edit to raise error (if the state is not terminal, there should be legal actions to take) - is this true??
             else:
                 return 0
         

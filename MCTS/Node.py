@@ -1,17 +1,24 @@
 class Node:
-    def __init__(self, state, parent = None):
-        self.state = state # STATE SHOULD BE A COPY OF THE MONOPOLYGAMEMCTS CLASS
+    def __init__(self, state, action, parent = None):
+        self.state = state # STATE SHOULD BE A COPY OF THE MONOPOLYBOARDMCTS CLASS
         self.children = []
         self.visits = 0
         self.total_reward = 0
+        self.action = action
         self.parent = parent
-        # self.action = action
 
-    def terminal(self):
-        pass
+    def is_terminal(self):
+        if len(self.state.players) < 2:
+            return True
+        else:
+            return False
 
     def get_child_with_action(self, action):
-        pass
+        for child in self.children:
+            if child.state.action == action:
+                return child
+        
+        raise LookupError(f"Child with action {action} does not exist.")
 
     def add_child(self, action, child):
         pass

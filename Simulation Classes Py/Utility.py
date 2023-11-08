@@ -64,7 +64,7 @@ class Utility:
         return f'{self.name} is a utility located at position {self.loc} on the Monopoly board that can be purchased for {self.price}.\
             \n If a player owns a single utility, they must be paid {self.rent_multipliers[0]} multiplied by the dice roll in rent.\
             \n If a player owns both utilities, they must by paid {self.rent_multipliers[1]} multiplied by the dice roll in rent.\
-            \n This property is currently owned by {self.owner.name if self.owner else "no-one"}.'
+            \n This property is currently owned by {self.owner.name if self.owner else "no-one"} and is{"" if self.is_mortgaged else " not"} mortgaged.'
     
     def __lt__(self, other):
         """

@@ -68,7 +68,7 @@ class Station:
             \n Rent if two stations are owned: {self.rents[1]} \
             \n Rent if three stations are owned: {self.rents[2]} \
             \n Rent if four stations are owned: {self.rents[3]} \
-            \n This property is currently owned by {self.owner.name if self.owner else "no-one"}.'
+            \n This property is currently owned by {self.owner.name if self.owner else "no-one"} and is{"" if self.is_mortgaged else " not"} mortgaged.'
     
     def __lt__(self, other):
         """

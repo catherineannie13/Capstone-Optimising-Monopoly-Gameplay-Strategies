@@ -1032,7 +1032,7 @@ class MonopolyBoardMCTS:
             prop = self.properties_dict[property_name]
 
             mortgage_value = prop.calculate_mortgage_value()
-            player.recieve(mortgage_value)
+            player.receive(mortgage_value)
             prop.is_mortgaged = True
 
         # sell hotel on property

@@ -39,16 +39,17 @@ class MCTS:
 
     def expansion(self, node):
         legal_actions = node.state.get_legal_actions()
-        untried_actions = [action for action in legal_actions if action not in node.children]
+        children_actions = [child.action for child in node.children]
+        untried_actions = [action for action in legal_actions if action not in children_actions]
 
-        # if there are untried actions, randomly choose one
+        # if there are untried actions, randomly choose one & create child node
         if untried_actions:
             action = random.choice(untried_actions)
             new_state = node.state.perform_action(action)
 
             # create child node for new action
-            child = Node(new_state)
-            node.add_child(action, child)
+            child = Node(new_state, action, parent = node)
+            node.children.append(child)
 
             return child
         
@@ -60,6 +61,7 @@ class MCTS:
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
+        # TO DO: EDIT THIS METHOD SO THAT THE GAME IS PLAYED OUT CORRECTLY (INCLUDING OPPONENTS' TURNS)
         state = node.state
 
         while not state.is_terminal():
@@ -76,6 +78,7 @@ class MCTS:
                 return 0
         
         # TO DO: wealth calculation
+        # MAYBE: WEALTH MIGHT BE GIVEN BY THE RATIO OF THE AGENTS WEALTH TO THE AVERAGE OF OTHER PLAYERS' WEALTH
         return state.calculate_reward()
 
 

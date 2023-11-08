@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, state, action, parent = None):
+    def __init__(self, state, action = None, parent = None):
         self.state = state # STATE SHOULD BE A COPY OF THE MONOPOLYBOARDMCTS CLASS
         self.children = []
         self.visits = 0
@@ -19,6 +19,3 @@ class Node:
                 return child
         
         raise LookupError(f"Child with action {action} does not exist.")
-
-    def add_child(self, action, child):
-        pass

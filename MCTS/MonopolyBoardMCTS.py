@@ -911,11 +911,10 @@ class MonopolyBoardMCTS:
             else:
                 player.bankrupt = True
 
-
     def get_legal_actions(self):
         # TO DO: if the player is in jail and has been there for 3 rounds, they must leave jail! - only options are to pay or use get out jail card, and if not then the only options are to mortgage/sell houses
         # TO DO: if the player rolled doubles, one of their legal actions is to roll again - OR should this be incorporated in the "End turn" action?
-        # TO DO: if the player owes money, the only options are to sell houses/mortgage
+        # TO DO: if the player owes money, the only options are to sell houses/mortgage, THEY CANNOT END THEIR TURN!
         legal_actions = ["End turn"]
 
         # player can unmortgage mortgaged properties at any point given they have enough money

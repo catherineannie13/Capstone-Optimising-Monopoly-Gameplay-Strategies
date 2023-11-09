@@ -18,4 +18,7 @@ class Node:
             if child.state.action == action:
                 return child
         
-        raise LookupError(f"Child with action {action} does not exist.")
+        raise ChildNotFoundError(f"Child with action {action} does not exist")
+    
+class ChildNotFoundError(Exception):
+    pass

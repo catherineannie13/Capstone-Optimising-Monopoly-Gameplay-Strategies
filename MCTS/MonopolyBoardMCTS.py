@@ -546,13 +546,10 @@ class MonopolyBoardMCTS:
         elif space.type == "Free Parking":
             pass
         
-        # player goes to jail and revoke pass go money immediately
+        # player goes to jail
         elif space.type == "Go To Jail":
             player.position = 10
             player.in_jail = True
-
-            # in the case that the player goes to jail, they don't collect go money
-            player.pay(self.board[0].income)
 
         else:
             raise TypeError("Space of incorrect type found on board. Type: " + space.type)
@@ -1190,14 +1187,10 @@ class MonopolyBoardMCTS:
         elif space.type == "Free Parking":
             pass
 
-        # player goes to jail and revoke pass go money immediately
+        # player goes to jail
         elif space.type == "Go To Jail":
             self.agent.position = 10
             self.agent.in_jail = True
-
-            # in the case that the player goes to jail, they don't collect go money
-            # TO DO: PLAYER SHOULDN'T RECEIVE THE MONEY IN THE FIRST PLACE! FIX THIS (FOR AGENT AND OTHER PLAYERS)
-            self.agent.pay(self.board[0].income)
 
         else:
             raise TypeError("Space of incorrect type found on board. Type: " + space.type)

@@ -77,7 +77,6 @@ class MCTS:
 
         return state.calculate_reward()
 
-
     def backpropagation(self, node, reward):
         # traverse up the tree to the root
         while node is not None:
@@ -110,5 +109,6 @@ class MCTS:
         best_action = self.select_best_action(self.root)
 
         return best_action
+        
 class GameLogicError(Exception):
     pass

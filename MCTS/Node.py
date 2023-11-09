@@ -8,7 +8,7 @@ class Node:
         self.parent = parent
 
     def is_terminal(self):
-        if len(self.state.players) < 2:
+        if self.state.agent.bankrupt:
             return True
         else:
             return False

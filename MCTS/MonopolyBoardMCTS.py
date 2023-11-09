@@ -1440,10 +1440,13 @@ class MonopolyBoardMCTS:
             self.agent.money_owed[opponent] = amount
 
     def is_terminal(self):
-        if len(self.players) < 2:
+        if self.agent.bankrupt:
             return True
         else:
             return False
         
     def calculate_reward(self):
-        return self.agent.wealth()/np.mean([other_player.wealth() for other_player in self.other_players])
+        if self.agent.bankrupt:
+            return 0
+        else:
+            return self.agent.wealth()/np.mean([other_player.wealth() for other_player in self.other_players])

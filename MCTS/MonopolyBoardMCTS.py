@@ -899,80 +899,80 @@ class MonopolyBoardMCTS:
                 player.bankrupt = True
 
 
-    def get_legal_actions(self, player):
+    def get_legal_actions(self):
         # TO DO: if the player is in jail and has been there for 3 rounds, they must leave jail! - only options are to pay or use get out jail card, and if not then the only options are to mortgage/sell houses
         # TO DO: if the player rolled doubles, one of their legal actions is to roll again - OR should this be incorporated in the "End turn" action?
         # TO DO: if the player owes money, the only options are to sell houses/mortgage
         legal_actions = ["End turn"]
 
         # player can unmortgage mortgaged properties at any point given they have enough money
-        mortgaged_streets = [prop for prop in player.properties if prop.is_mortgaged]
-        mortgaged_stations = [station for station in player.stations if station.is_mortgaged]
-        mortgaged_utilities = [utility for utility in player.utilities if utility.is_mortgaged]
+        mortgaged_streets = [prop for prop in self.agent.properties if prop.is_mortgaged]
+        mortgaged_stations = [station for station in self.agent.stations if station.is_mortgaged]
+        mortgaged_utilities = [utility for utility in self.agent.utilities if utility.is_mortgaged]
         mortgaged_properties = mortgaged_streets + mortgaged_stations + mortgaged_utilities
         for prop in mortgaged_properties:
-            if player.money >= prop.calculate_unmortgage_price():
+            if self.agent.money >= prop.calculate_unmortgage_price():
                 legal_actions.append(f"Unmortgage {prop.name}")
 
         # player can mortgage unmortgaged properties at any point given they are not built on
-        unmortgaged_streets = [prop for prop in player.properties if not prop.is_mortgaged and prop.num_houses == 0]
-        unmortgaged_stations = [station for station in player.stations if not station.is_mortgaged and station.num_houses == 0]
-        unmortgaged_utilities = [utility for utility in player.utilities if not utility.is_mortgaged and utility.num_houses == 0]
+        unmortgaged_streets = [prop for prop in self.agent.properties if not prop.is_mortgaged and prop.num_houses == 0]
+        unmortgaged_stations = [station for station in self.agent.stations if not station.is_mortgaged and station.num_houses == 0]
+        unmortgaged_utilities = [utility for utility in self.agent.utilities if not utility.is_mortgaged and utility.num_houses == 0]
         unmortgaged_properties = unmortgaged_streets + unmortgaged_stations + unmortgaged_utilities
         for prop in unmortgaged_properties:
             legal_actions.append(f"Mortgage {prop.name}")
 
         # player can sell hotels at any point (will never result in >1 discrepency between properties)
-        sell_hotel_streets = [prop for prop in player.properties if prop.hotel]
+        sell_hotel_streets = [prop for prop in self.agent.properties if prop.hotel]
         for prop in sell_hotel_streets:
             legal_actions.append(f"Sell hotel on {prop.name}")
 
         # player can sell houses given house discrepency is <=1
-        sell_house_streets = [prop for prop in player.properties if prop.num_houses>0 and not prop.hotel]
+        sell_house_streets = [prop for prop in self.agent.properties if prop.num_houses>0 and not prop.hotel]
         for prop in sell_house_streets:
             new_prop_build = prop.num_houses + prop.hotel - 1
-            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in player.property_sets[prop.group]]
+            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
 
             if all(house_discrepencies):
                 legal_actions.append(f"Sell house on {prop.name}")
 
         # player can buy hotels at any point if they have 4 houses, no hotel, enough money & <=1 house discrepency
-        buy_hotel_streets = [prop for prop in player.properties if prop.num_houses==4 and not prop.hotel]
+        buy_hotel_streets = [prop for prop in self.agent.properties if prop.num_houses==4 and not prop.hotel]
         for prop in buy_hotel_streets:
             new_prop_build = prop.num_houses + prop.hotel + 1
-            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in player.property_sets[prop.group]]
+            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
 
-            if all(house_discrepencies) and player.money >= prop.house_price:
+            if all(house_discrepencies) and self.agent.money >= prop.house_price:
                 legal_actions.append(f"Buy hotel on {prop.name}")
 
         # player can buy houses at any point if they have fewer than 4 houses, enough money, a set & <= house discrepency
-        buy_house_streets = [prop for prop in player.properties if prop.num_houses < 4]
+        buy_house_streets = [prop for prop in self.agent.properties if prop.num_houses < 4]
         for prop in buy_house_streets:
             group = self.property_sets[prop.group]
-            player_group = player.property_sets[prop.group]
+            player_group = self.agent.property_sets[prop.group]
             new_prop_build = prop.num_houses + prop.hotel + 1
-            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in player.property_sets[prop.group]]
+            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
 
-            if all(house_discrepencies) and player.money >= prop.house_price and sorted(group) == sorted(player_group):
+            if all(house_discrepencies) and self.agent.money >= prop.house_price and sorted(group) == sorted(player_group):
                 legal_actions.append(f"Buy house on {prop.name}")
 
         # if the player is in jail, legal options include using jail cards/paying
         # TO DO: think about legalities of this step
-        if player.in_jail:
-            if player.jail_cards > 0:
+        if self.agent.in_jail:
+            if self.agent.jail_cards > 0:
                 legal_actions.append("Use Get Out of Jail Free card")
-            if player.money >= 50:
+            if self.agent.money >= 50:
                 legal_actions.append("Pay 50 to get out of jail")
 
         # if the player is on an unowned property, they can purchase it given they have enough money
-        space = self.board[player.position]
+        space = self.board[self.agent.position]
         is_property = (space.type == "Street" or space.type == "Station" or space.type == "Utility")
-        if is_property and space.owner == None and player.money >= space.price:
+        if is_property and space.owner == None and self.agent.money >= space.price:
             legal_actions.append(f"Purchase {space.name}")
 
         return legal_actions
 
-    def perform_action(self, action, player):
+    def perform_action(self, action):
         # TO DO: IF A PLAYER OWES MONEY, PAY IT OFF WITH MONEY THEY GET FROM MORTGAGING/SELLING HOUSES
         # unmortgage property
         if action.startswith("Unmortgage"):
@@ -980,7 +980,7 @@ class MonopolyBoardMCTS:
             prop = self.properties_dict[property_name]
 
             unmortgage_cost = prop.calculate_unmortgage_price()
-            player.pay(unmortgage_cost)
+            self.agent.pay(unmortgage_cost)
             prop.is_mortgaged = False
 
         # mortgage property
@@ -989,7 +989,7 @@ class MonopolyBoardMCTS:
             prop = self.properties_dict[property_name]
 
             mortgage_value = prop.calculate_mortgage_value()
-            player.receive(mortgage_value)
+            self.agent.receive(mortgage_value)
             prop.is_mortgaged = True
 
         # sell hotel on property
@@ -998,7 +998,7 @@ class MonopolyBoardMCTS:
             prop = self.properties_dict[property_name]
 
             hotel_value = prop.calculate_house_sale_value()
-            player.receive(hotel_value)
+            self.agent.receive(hotel_value)
             prop.hotel = False
 
         # sell house on property
@@ -1007,7 +1007,7 @@ class MonopolyBoardMCTS:
             prop = self.properties_dict[property_name]
 
             house_value = prop.calculate_house_sale_value()
-            player.receive(house_value)
+            self.agent.receive(house_value)
             prop.num_houses -= 1
 
         # buy hotel on property
@@ -1015,7 +1015,7 @@ class MonopolyBoardMCTS:
             property_name = action[len("Buy hotel on"):].strip()
             prop = self.properties_dict[property_name]
 
-            player.pay(prop.house_price)
+            self.agent.pay(prop.house_price)
             prop.hotel = True
 
         # buy house on property
@@ -1023,42 +1023,43 @@ class MonopolyBoardMCTS:
             property_name = action[len("Buy house on"):].strip()
             prop = self.properties_dict[property_name]
 
-            player.pay(prop.house_price)
+            self.agent.pay(prop.house_price)
             prop.num_houses += 1
 
         # use get out of jail free card
         if action == "Use Get Out of Jail Free card":
-            player.jail_cards -= 1
-            player.in_jail = False
-            player.turns_in_jail = 0
+            self.agent.jail_cards -= 1
+            self.agent.in_jail = False
+            self.agent.turns_in_jail = 0
 
         # pay to leave jail
         if action == "Pay 50 to get out of jail":
-            player.pay(50)
-            player.in_jail = False
-            player.turns_in_jail = 0
+            self.agent.pay(50)
+            self.agent.in_jail = False
+            self.agent.turns_in_jail = 0
 
         # purchase property
         if action.startswith("Purchase"):
             property_name = action[len("Purchase"):].strip()
             prop = self.properties_dict[property_name]
 
-            player.pay(prop.price)
-            prop.owner = player
+            self.agent.pay(prop.price)
+            prop.owner = self.agent
 
             if prop.type == "Street":
-                player.properties.append(prop)
-                player.property_sets[prop.group].append(prop)
+                self.agent.properties.append(prop)
+                self.agent.property_sets[prop.group].append(prop)
             elif prop.type == "Station":
-                player.stations.append(prop)
+                self.agent.stations.append(prop)
             elif prop.type == "Utility":
-                player.utilities.append(prop)
+                self.agent.utilities.append(prop)
             else:
                 raise TypeError("Cannot purchase space of type" + prop.type)
         
+        # end of player's turn
         if action == "End turn":
 
-            # if the player rolled doubles, it is still their turn
+            # if the player rolled doubles, they go again
             if self.agent.double_rolled:
                 self.agent_turn()
                 return

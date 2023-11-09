@@ -902,6 +902,7 @@ class MonopolyBoardMCTS:
     def get_legal_actions(self, player):
         # TO DO: if the player is in jail and has been there for 3 rounds, they must leave jail! - only options are to pay or use get out jail card, and if not then the only options are to mortgage/sell houses
         # TO DO: if the player rolled doubles, one of their legal actions is to roll again - OR should this be incorporated in the "End turn" action?
+        # TO DO: if the player owes money, the only options are to sell houses/mortgage
         legal_actions = ["End turn"]
 
         # player can unmortgage mortgaged properties at any point given they have enough money
@@ -972,6 +973,7 @@ class MonopolyBoardMCTS:
         return legal_actions
 
     def perform_action(self, action, player):
+        # TO DO: IF A PLAYER OWES MONEY, PAY IT OFF WITH MONEY THEY GET FROM MORTGAGING/SELLING HOUSES
         # unmortgage property
         if action.startswith("Unmortgage"):
             property_name = action[len("Unmortgage"):].strip()
@@ -1059,6 +1061,7 @@ class MonopolyBoardMCTS:
             for other_player in self.other_players:
                 self.take_turn(other_player)
 
+            # TO DO: POTENTIALLY MOVE REST OF THIS CODE INTO A SEPARATE METHOD?
             # player rolls the dice
             a_roll = random.randint(1, 6)
             b_roll = random.randint(1, 6)
@@ -1076,19 +1079,15 @@ class MonopolyBoardMCTS:
                     
             if a_roll == b_roll:
                 # TO DO: HANDLE DOUBLES WITHIN A TURN
-                pass
-                
-            '''
-            # count consecutive doubles for player
-            if a_roll == b_roll:
                 doubles += 1
 
             # go to jail if third double in a row and end turn
+            # TO DO: ADAPT THIS TO HANDLE DOUBLES CORRECTLY
             if doubles > 2:
                 player.position = 10
                 player.in_jail = True
                 return
-                
+            
             # player moves the number of spaces shown on the two dice combined
             previous_position = player.position
             player.move(dice_roll)
@@ -1099,31 +1098,35 @@ class MonopolyBoardMCTS:
             if previous_position > new_position:
                 player.receive(self.board[0].income)
 
+            #
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
             if space.type == "Street":
-                self.handle_property(player, space)
+                pass
 
+            #
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
             elif space.type == "Station":
-                self.handle_property(player, space)
+                pass
 
+            #
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
             elif space.type == "Utility":
-                self.handle_property(player, space, dice_roll)
-            
-            # handle chance card outcomes
+                pass
+
+            # 
+            # TO DO: CHANCE!
             elif space.type == "Chance":
-                self.perform_chance(player, dice_roll)
+                pass
 
-            # handle community chest card outcomes
+            # 
+            # TO DO: COMMNITY CHEST!
             elif space.type == "Community Chest":
-                self.perform_community_chest(player)
+                pass
 
-            # player pays the tax amount to the bank and no further action is taken
+            # 
+            # TO DO: KEEP TRACK OF MONEY THAT THE PLAYER OWES AND TO WHOM/WHERE
             elif space.type == "Tax":
-                tax = space.calculate_tax(player)
-
-                if player.money >= tax:
-                    player.pay(tax)
-                else:
-                    self.raise_funds(player, tax)
+                pass
 
             # no action is taken if the player lands on Go
             elif space.type == "Go":
@@ -1136,7 +1139,7 @@ class MonopolyBoardMCTS:
             # no action is taken if the player lands on free parking
             elif space.type == "Free Parking":
                 pass
-            
+
             # player goes to jail and revoke pass go money immediately
             elif space.type == "Go To Jail":
                 player.position = 10
@@ -1147,15 +1150,11 @@ class MonopolyBoardMCTS:
 
             else:
                 raise TypeError("Space of incorrect type found on board. Type: " + space.type)
-            
-            # player takes another turn if they roll a double
-            if a_roll == b_roll:
-                self.take_turn(player, doubles)
-            else:
-                return
-            '''
 
+            # player takes another turn if they roll a double
             # TO DO: work out how to deal with doubles!
+            if a_roll == b_roll:
+                pass
 
     def is_terminal(self):
         if len(self.players) < 2:

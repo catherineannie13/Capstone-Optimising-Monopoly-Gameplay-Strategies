@@ -916,8 +916,8 @@ class MonopolyBoardMCTS:
 
         # player can mortgage unmortgaged properties at any point given they are not built on
         unmortgaged_streets = [prop for prop in self.agent.properties if not prop.is_mortgaged and prop.num_houses == 0]
-        unmortgaged_stations = [station for station in self.agent.stations if not station.is_mortgaged and station.num_houses == 0]
-        unmortgaged_utilities = [utility for utility in self.agent.utilities if not utility.is_mortgaged and utility.num_houses == 0]
+        unmortgaged_stations = [station for station in self.agent.stations if not station.is_mortgaged]
+        unmortgaged_utilities = [utility for utility in self.agent.utilities if not utility.is_mortgaged]
         unmortgaged_properties = unmortgaged_streets + unmortgaged_stations + unmortgaged_utilities
         for prop in unmortgaged_properties:
             legal_actions.append(f"Mortgage {prop.name}")
@@ -928,7 +928,7 @@ class MonopolyBoardMCTS:
             legal_actions.append(f"Sell hotel on {prop.name}")
 
         # player can sell houses given house discrepency is <=1
-        sell_house_streets = [prop for prop in self.agent.properties if prop.num_houses>0 and not prop.hotel]
+        sell_house_streets = [prop for prop in self.agent.properties if prop.num_houses > 0 and not prop.hotel]
         for prop in sell_house_streets:
             new_prop_build = prop.num_houses + prop.hotel - 1
             house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
@@ -1078,6 +1078,8 @@ class MonopolyBoardMCTS:
         
         # if player owes money, pay it
         if len(self.agent.money_owed) > 0:
+            items_to_delete = []
+
             for recipient, amount in self.agent.money_owed.items():
 
                 # money owed to another player is payed if possible
@@ -1085,7 +1087,7 @@ class MonopolyBoardMCTS:
                     if self.agent.money >= amount:
                         self.agent.pay(amount)
                         recipient.receive(amount)
-                        del self.agent.money_owed[recipient]
+                        items_to_delete.append(recipient)
                     else:
                         pass
 
@@ -1093,9 +1095,12 @@ class MonopolyBoardMCTS:
                 else:
                     if self.agent.money >= amount:
                         self.agent.pay(amount)
-                        del self.agent.money_owed[recipient]
+                        items_to_delete.append(recipient)
                     else:
                         pass
+
+            for recipient in items_to_delete:
+                del self.agent.money_owed[recipient]
         
         # end of player's turn
         if action == "End turn":

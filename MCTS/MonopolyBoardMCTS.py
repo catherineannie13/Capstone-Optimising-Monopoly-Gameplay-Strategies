@@ -77,6 +77,8 @@ class MonopolyBoardMCTS:
 
     def __init__(self):
         self.players = []
+        self.agent = None
+        self.other_players = []
         self.board = [None]*40
         self.properties = []
         self.stations = []
@@ -365,7 +367,7 @@ class MonopolyBoardMCTS:
         self.board[loc] = go_to_jail
         self.go_to_jail = go_to_jail
 
-    def add_player(self, player):
+    def add_other_player(self, player):
         """
         This method adds a single player to the MonopolyBoard class. Each player is an instance
         of the class Player and contains all necessary information about that player and their 
@@ -381,6 +383,11 @@ class MonopolyBoardMCTS:
         None
         """
         self.players.append(player)
+        self.other_players.append(player)
+
+    def add_agent(self, agent):
+        self.players.append(agent)
+        self.agent = agent
 
     def play_game(self, stopping_condition = float('inf')):
         """
@@ -947,7 +954,7 @@ class MonopolyBoardMCTS:
 
 
     def get_legal_actions(self, player):
-        legal_actions = []
+        legal_actions = ["End turn"]
 
         # player can unmortgage mortgaged properties at any point given they have enough money
         mortgaged_streets = [prop for prop in player.properties if prop.is_mortgaged]
@@ -1096,6 +1103,12 @@ class MonopolyBoardMCTS:
                 player.utilities.append(prop)
             else:
                 raise TypeError("Cannot purchase space of type" + prop.type)
+            
+        if action == "End turn":
+            # other players' turns!
+            # roll the dice for the player and perform actions for other spaces (community chest, chance, etc.)
+            # work out how to deal with doubles
+            pass
 
     def is_terminal(self):
         if len(self.players) < 2:

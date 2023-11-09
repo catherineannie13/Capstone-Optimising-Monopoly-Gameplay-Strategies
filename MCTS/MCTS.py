@@ -74,8 +74,9 @@ class MCTS:
                 state = state.perform_action(action)
 
             # TO DO: edit to raise error (if the state is not terminal, there should be legal actions to take) - is this true??
+            # TO DO: is it a typeError or a different kind?
             else:
-                return 0
+                raise TypeError("There are no legal actions but the state of the game is terminal")
         
         # TO DO: wealth calculation
         # MAYBE: WEALTH MIGHT BE GIVEN BY THE RATIO OF THE AGENTS WEALTH TO THE AVERAGE OF OTHER PLAYERS' WEALTH

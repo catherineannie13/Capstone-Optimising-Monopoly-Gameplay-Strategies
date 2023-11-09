@@ -549,60 +549,6 @@ class MonopolyBoardMCTS:
         else:
             return
 
-    def unmortgage_properties(self, player):
-        self.strategy.decide_unmortgage_properties(player)
-
-    def build_on_properties(self, player):
-        self.strategy.decide_build_on_properties(player, self.property_sets)
-
-    def roll_dice(self):
-        a_roll = random.randint(1, 6)
-        b_roll = random.randint(1, 6)
-        return a_roll, b_roll
-
-    def handle_jail(self, player, a_roll, b_roll):
-        # if the player is in jail
-        if player.in_jail:
-            player.turns_in_jail += 1
-
-            # player must leave jail after 3 rounds
-            if player.turns_in_jail > 2:
-                if a_roll == b_roll:
-                    pass
-                elif player.jail_cards > 0:
-                    player.jail_cards -= 1
-                elif player.money >= 50:
-                    player.pay(50)
-                else:
-                    self.raise_funds(player, 50)
-                
-                player.in_jail = False
-
-            # decide whether or not to leave jail before 3 rounds
-            elif self.strategy.decide_to_leave_jail(player):
-                player.in_jail = False
-
-            # not leaving jail so turn is over
-            else:
-                return
-
-    def move_player(self, player, dice_roll):
-        # player moves the number of spaces shown on the two dice combined
-        previous_position = player.position
-        player.move(dice_roll)
-        new_position = player.position
-        space = self.board[new_position]
-
-        return previous_position, new_position, space
-
-    def handle_tax(self, player, space):
-        tax = space.calculate_tax(player)
-
-        if player.money >= tax:
-            player.pay(tax)
-        else:
-            self.raise_funds(player, tax)
-        
     def perform_chance(self, player, dice_roll):
         """
         This method executes a player picking a chance card from the top of the chance card
@@ -1105,10 +1051,118 @@ class MonopolyBoardMCTS:
                 raise TypeError("Cannot purchase space of type" + prop.type)
             
         if action == "End turn":
-            # other players' turns!
-            # roll the dice for the player and perform actions for other spaces (community chest, chance, etc.)
-            # work out how to deal with doubles
-            pass
+            # other players have their turns
+            for other_player in self.other_players:
+                self.take_turn(other_player)
+
+            # player rolls the dice
+            a_roll = random.randint(1, 6)
+            b_roll = random.randint(1, 6)
+            dice_roll = a_roll + b_roll
+                
+            '''
+            # if the player is in jail
+            if player.in_jail:
+                player.turns_in_jail += 1
+
+                # player must leave jail after 3 rounds
+                if player.turns_in_jail > 2:
+                    if a_roll == b_roll:
+                        pass
+                    elif player.jail_cards > 0:
+                        player.jail_cards -= 1
+                    elif player.money >= 50:
+                        player.pay(50)
+                    else:
+                        self.raise_funds(player, 50)
+                    
+                    player.in_jail = False
+
+                # decide whether or not to leave jail before 3 rounds
+                elif self.strategy.decide_to_leave_jail(player):
+                    player.in_jail = False
+
+                # not leaving jail so turn is over
+                else:
+                    return
+
+            # count consecutive doubles for player
+            if a_roll == b_roll:
+                doubles += 1
+
+            # go to jail if third double in a row and end turn
+            if doubles > 2:
+                player.position = 10
+                player.in_jail = True
+                return
+                
+            # player moves the number of spaces shown on the two dice combined
+            previous_position = player.position
+            player.move(dice_roll)
+            new_position = player.position
+            space = self.board[new_position]
+
+            # if the player passed go, collect the Go income
+            if previous_position > new_position:
+                player.receive(self.board[0].income)
+
+            if space.type == "Street":
+                self.handle_property(player, space)
+
+            elif space.type == "Station":
+                self.handle_property(player, space)
+
+            elif space.type == "Utility":
+                self.handle_property(player, space, dice_roll)
+            
+            # handle chance card outcomes
+            elif space.type == "Chance":
+                self.perform_chance(player, dice_roll)
+
+            # handle community chest card outcomes
+            elif space.type == "Community Chest":
+                self.perform_community_chest(player)
+
+            # player pays the tax amount to the bank and no further action is taken
+            elif space.type == "Tax":
+                tax = space.calculate_tax(player)
+
+                if player.money >= tax:
+                    player.pay(tax)
+                else:
+                    self.raise_funds(player, tax)
+
+            # no action is taken if the player lands on Go
+            elif space.type == "Go":
+                pass
+            
+            # no action is taken if the player lands on jail since they are just visiting
+            elif space.type == "Jail":
+                pass
+
+            # no action is taken if the player lands on free parking
+            elif space.type == "Free Parking":
+                pass
+            
+            # player goes to jail and revoke pass go money immediately
+            elif space.type == "Go To Jail":
+                player.position = 10
+                player.in_jail = True
+
+                # in the case that the player goes to jail, they don't collect go money
+                player.pay(self.board[0].income)
+
+            else:
+                raise TypeError("Space of incorrect type found on board. Type: " + space.type)
+            
+            # player takes another turn if they roll a double
+            if a_roll == b_roll:
+                self.take_turn(player, doubles)
+            else:
+                return
+            '''
+
+            # TO DO: work out how to deal with doubles!
 
     def is_terminal(self):
         if len(self.players) < 2:

@@ -8,7 +8,7 @@ class Node:
         self.parent = parent
 
     def is_terminal(self):
-        if self.state.agent.bankrupt:
+        if self.state.agent.bankrupt or all([other_player.bankrupt for other_player in self.state.other_players]):
             return True
         else:
             return False

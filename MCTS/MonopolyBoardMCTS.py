@@ -1164,7 +1164,7 @@ class MonopolyBoardMCTS:
 
         # handle chance
         elif space.type == "Chance":
-            self.perform_chance_agent()
+            self.perform_chance_agent(dice_roll)
 
         # handle community chest
         elif space.type == "Community Chest":
@@ -1433,7 +1433,7 @@ class MonopolyBoardMCTS:
             self.agent.money_owed[opponent] = amount
 
     def is_terminal(self):
-        if self.agent.bankrupt:
+        if self.agent.bankrupt or all([other_player.bankrupt for other_player in self.other_players]):
             return True
         else:
             return False

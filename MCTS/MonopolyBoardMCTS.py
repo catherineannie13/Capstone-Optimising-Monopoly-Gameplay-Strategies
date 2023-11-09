@@ -727,6 +727,7 @@ class MonopolyBoardMCTS:
             player.receive(150)
 
         else:
+            # TO DO: RAISE CARD TYPE ERROR (AND IN ORIGINAL MONOPOLYBOARD CLASS)
             return
             
     def perform_community_chest(self, player):
@@ -816,6 +817,7 @@ class MonopolyBoardMCTS:
             player.receive(100)
         
         else:
+            # TO DO: RAISE CARD TYPE ERROR (AND IN ORIGINAL MONOPOLYBOARD CLASS)
             return
 
     def handle_property(self, player, space, dice_roll = 0):
@@ -1276,15 +1278,13 @@ class MonopolyBoardMCTS:
             self.agent.position = 10
             self.agent.in_jail = True
 
-        elif chance_card == "Make general repairs on all your property. For each house pay £25. For each hotel pay £100":
+        elif chance_card == "Make general repairs on all your property. For each house pay £25. For each hotel pay £100.":
             cost = 25*self.agent.houses + 100*self.agent.hotels
             # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
 
         elif chance_card == "Speeding fine £15.":
-            if self.agent.money >= 15:
-                self.agent.pay(15)
-            else:
-                self.raise_funds(self.agent, 15)
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            pass
 
         elif chance_card == "Take a trip to King's Cross Station. If you pass Go, collect £200.":
             previous_position = self.agent.position
@@ -1295,22 +1295,83 @@ class MonopolyBoardMCTS:
             if previous_position > king_position:
                 self.agent.receive(200)
 
-            # pay rent if owned, if not decide to purchase/not
-            station = self.board[king_position]
-            self.handle_property(self.agent, station)
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
 
         elif chance_card == "You have been elected Chairman of the Board. Pay each player £50.":
-            for opponent in self.players:
-                if self.agent.money >= 50:
-                    self.agent.pay(50)
-                    opponent.receive(50)
-                else:
-                    self.raise_funds(opponent, 50)
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            pass
 
         elif chance_card == "Your building loan matures. Collect £150.":
             self.agent.receive(150)
 
         else:
+            # TO DO: RAISE CARD TYPE ERROR
+            return
+        
+    def perform_community_chest_agent(self):
+        community_chest_card = self.community_chest.choose_card()
+
+        if community_chest_card == "Advance to Go.":
+            self.agent.position = 0
+            self.agent.receive(200)
+
+        elif community_chest_card == "Bank error in your favor. Collect £200.":
+            self.agent.receive(200)
+        
+        elif community_chest_card == "Doctor’s fee. Pay £50.":
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            pass
+        
+        elif community_chest_card == "From sale of stock you get £50.":
+            self.agent.receive(50)
+        
+        elif community_chest_card == "Get Out of Jail Free.":
+            self.agent.jail_cards += 1
+        
+        elif community_chest_card == "Go to Jail. Go directly to jail, do not pass Go, do not collect £200.":
+            self.agent.position = 10
+            self.agent.in_jail = True
+        
+        elif community_chest_card == "Holiday fund matures. Receive £100.":
+            self.agent.receive(100)
+        
+        elif community_chest_card == "Income tax refund. Collect £20.":
+            self.agent.receive(20)
+        
+        elif community_chest_card == "It is your birthday. Collect £10 from every player.":
+            for opponent in self.players:
+                if opponent.money >= 10:
+                    self.agent.receive(10)
+                    opponent.pay(10)
+                else:
+                    self.raise_funds(opponent, 10)
+        
+        elif community_chest_card == "Life insurance matures. Collect £100.":
+            self.agent.receive(100)
+        
+        elif community_chest_card == "Pay hospital fees of £100.":
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            pass
+        
+        elif community_chest_card == "Pay school fees of £50.":
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            pass
+        
+        elif community_chest_card == "Receive £25 consultancy fee.":
+            self.agent.receive(25)
+        
+        elif community_chest_card == "You are assessed for street repairs. £40 per house. £115 per hotel.":
+            cost = 40*self.agent.houses + 115*self.agent.hotels
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+        
+        elif community_chest_card == "You have won second prize in a beauty contest. Collect £10.":
+            self.agent.receive(10)
+        
+        elif community_chest_card == "You inherit £100.":
+            self.agent.receive(100)
+        
+        else:
+            # TO DO: RAISE CARD TYPE ERROR
             return
 
     def is_terminal(self):

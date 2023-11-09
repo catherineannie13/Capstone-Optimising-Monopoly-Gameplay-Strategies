@@ -1,3 +1,4 @@
+import random
 class CommunityChest:
     """
     This class represents the Community Chest spaces in a Monopoly game. It includes attributes to

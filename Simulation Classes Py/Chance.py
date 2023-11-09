@@ -1,3 +1,4 @@
+import random
 class Chance:
     """
     This class represents the Chance spaces in a Monopoly game. It includes attributes to

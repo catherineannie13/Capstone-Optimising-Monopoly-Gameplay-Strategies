@@ -1442,5 +1442,4 @@ class MonopolyBoardMCTS:
             return False
         
     def calculate_reward(self):
-        # TO DO: EDIT THIS TO REFLECT REWARD?
         return self.agent.wealth()/np.mean([other_player.wealth() for other_player in self.other_players])

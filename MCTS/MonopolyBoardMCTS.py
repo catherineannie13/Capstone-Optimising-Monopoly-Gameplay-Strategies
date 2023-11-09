@@ -989,6 +989,10 @@ class MonopolyBoardMCTS:
 
                 legal_actions.append("End turn")
 
+        # if the player has no options, they are bankrupt
+        if len(legal_actions) == 0:
+            self.agent.bankrupt = True
+
         return legal_actions
 
     def perform_action(self, action):

@@ -900,6 +900,8 @@ class MonopolyBoardMCTS:
 
 
     def get_legal_actions(self, player):
+        # TO DO: if the player is in jail and has been there for 3 rounds, they must leave jail! - only options are to pay or use get out jail card, and if not then the only options are to mortgage/sell houses
+        # TO DO: if the player rolled doubles, one of their legal actions is to roll again - OR should this be incorporated in the "End turn" action?
         legal_actions = ["End turn"]
 
         # player can unmortgage mortgaged properties at any point given they have enough money
@@ -1026,11 +1028,13 @@ class MonopolyBoardMCTS:
         if action == "Use Get Out of Jail Free card":
             player.jail_cards -= 1
             player.in_jail = False
+            player.turns_in_jail = 0
 
         # pay to leave jail
         if action == "Pay 50 to get out of jail":
             player.pay(50)
             player.in_jail = False
+            player.turns_in_jail = 0
 
         # purchase property
         if action.startswith("Purchase"):
@@ -1059,33 +1063,22 @@ class MonopolyBoardMCTS:
             a_roll = random.randint(1, 6)
             b_roll = random.randint(1, 6)
             dice_roll = a_roll + b_roll
-                
-            '''
-            # if the player is in jail
+
             if player.in_jail:
                 player.turns_in_jail += 1
 
-                # player must leave jail after 3 rounds
                 if player.turns_in_jail > 2:
                     if a_roll == b_roll:
-                        pass
-                    elif player.jail_cards > 0:
-                        player.jail_cards -= 1
-                    elif player.money >= 50:
-                        player.pay(50)
+                        player.in_jail = False
+                        player.turns_in_jail = 0
                     else:
-                        self.raise_funds(player, 50)
+                        return
                     
-                    player.in_jail = False
-
-                # decide whether or not to leave jail before 3 rounds
-                elif self.strategy.decide_to_leave_jail(player):
-                    player.in_jail = False
-
-                # not leaving jail so turn is over
-                else:
-                    return
-
+            if a_roll == b_roll:
+                # TO DO: HANDLE DOUBLES WITHIN A TURN
+                pass
+                
+            '''
             # count consecutive doubles for player
             if a_roll == b_roll:
                 doubles += 1

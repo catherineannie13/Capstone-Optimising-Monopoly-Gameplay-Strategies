@@ -1,3 +1,16 @@
+from Chance import Chance
+from CommunityChest import CommunityChest
+from FreeParking import FreeParking
+from Go import Go
+from GoToJail import GoToJail
+from Jail import Jail
+from Player import Player
+from Station import Station
+from Strategy import Strategy
+from Street import Street
+from Tax import Tax
+from Utility import Utility
+import random
 class MonopolyBoardMCTS:
     """
     This class represents the Monopoly board and the game logic. It provides methods for creating 
@@ -1070,6 +1083,7 @@ class MonopolyBoardMCTS:
                     self.take_turn(other_player)
 
                 self.agent_turn()
+                return
 
     def agent_turn(self):
         # player rolls the dice

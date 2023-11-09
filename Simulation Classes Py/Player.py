@@ -74,7 +74,7 @@ class Player:
         self.jail_cards = 0
         self.houses = 0
         self.hotels = 0
-        self.state = "Before turn"
+        self.money_owed = {}
 
     def __repr__(self):
         """

@@ -853,7 +853,7 @@ class MonopolyBoardMCTS:
             elif space.type == "Utility":
                 rent = space.calculate_rent(dice_roll, len(space.owner.utilities))
             else:
-                raise TypeError("Cannot purchase space of type" + space.type)  
+                raise TypeError("Cannot pay rent on space of type" + space.type)  
             
             if player.money >= rent:
                 player.pay(rent)
@@ -1103,11 +1103,9 @@ class MonopolyBoardMCTS:
                     return
                     
         if a_roll == b_roll:
-            # TO DO: HANDLE DOUBLES WITHIN A TURN
             self.agent.num_doubles += 1
 
         # go to jail if third double in a row and end turn
-        # TO DO: ADAPT THIS TO HANDLE DOUBLES CORRECTLY
         if self.agent.num_doubles > 2:
             self.agent.position = 10
             self.agent.in_jail = True
@@ -1125,35 +1123,30 @@ class MonopolyBoardMCTS:
         if previous_position > new_position:
             self.agent.receive(self.board[0].income)
 
-        #
-        # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
+        # handle street property
         if space.type == "Street":
-            pass
+            self.handle_property_agent(space)
 
-        #
-        # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
+        # handle station property
         elif space.type == "Station":
-            pass
+            self.handle_property_agent(space)
 
-        #
-        # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
+        # handle utility property
         elif space.type == "Utility":
-            pass
+            self.handle_property_agent(space, dice_roll)
 
-        # 
-        # TO DO: CHANCE!
+        # handle chance
         elif space.type == "Chance":
-            pass
+            self.perform_chance_agent()
 
-        # 
-        # TO DO: COMMNITY CHEST!
+        # handle community chest
         elif space.type == "Community Chest":
-            pass
+            self.perform_community_chest_agent()
 
-        # 
-        # TO DO: KEEP TRACK OF MONEY THAT THE PLAYER OWES AND TO WHOM/WHERE
+        # player pays tax if possible, otherwise they owe the money and must pay at next 'move'/child node
         elif space.type == "Tax":
-            pass
+            tax = space.calculate_tax(self.agent)
+            self.handle_bank_payment_agent(tax)
 
         # no action is taken if the player lands on Go
         elif space.type == "Go":
@@ -1173,6 +1166,7 @@ class MonopolyBoardMCTS:
             self.agent.in_jail = True
 
             # in the case that the player goes to jail, they don't collect go money
+            # TO DO: PLAYER SHOULDN'T RECEIVE THE MONEY IN THE FIRST PLACE! FIX THIS (FOR AGENT AND OTHER PLAYERS)
             self.agent.pay(self.board[0].income)
 
         else:
@@ -1194,7 +1188,8 @@ class MonopolyBoardMCTS:
             if previous_position > traf_position:
                 self.agent.receive(200)
 
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            street = self.board[traf_position]
+            self.handle_property_agent(street)
 
         elif chance_card == "Advance to Mayfair. If you pass Go, collect £200.":
             previous_position = self.agent.position
@@ -1205,7 +1200,8 @@ class MonopolyBoardMCTS:
             if previous_position > mayf_position:
                 self.agent.receive(200)
 
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            street = self.board[mayf_position]
+            self.handle_property_agent(street)
 
         elif chance_card == "Advance to Pall Mall. If you pass Go, collect £200.":
             previous_position = self.agent.position
@@ -1216,7 +1212,8 @@ class MonopolyBoardMCTS:
             if previous_position > pall_position:
                 self.agent.receive(200)
 
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            street = self.board[pall_position]
+            self.handle_property_agent(street)
 
         elif chance_card == "Advance to the nearest Station. If unowned, you may buy it from the Bank. \
             If owned, pay the owner twice the rental to which they are otherwise entitled.":
@@ -1233,7 +1230,8 @@ class MonopolyBoardMCTS:
                 idx = 5
                 self.agent.position = idx
 
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            station = self.board[idx]
+            self.handle_property_agent(station)
 
         elif chance_card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. \
             If owned, throw dice and pay owner a total ten times the amount thrown.":
@@ -1244,7 +1242,8 @@ class MonopolyBoardMCTS:
                 idx = 12
                 self.agent.position = idx
 
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            utility = self.board[idx]
+            self.handle_property_agent(utility, dice_roll)
 
         elif chance_card == "Bank pays you a dividend of £50.":
             self.agent.receive(50)
@@ -1258,13 +1257,14 @@ class MonopolyBoardMCTS:
             # position of player is either community chest, vine street or income tax
             if self.agent.position == 4:
                 # income tax
-                # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-                pass
+                space = self.board[4]
+                tax = space.calculate_tax(self.agent)
+                self.handle_bank_payment_agent(tax)
 
             elif self.agent.position == 19:
                 # vine street
-                # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-                pass
+                street = self.board[19]
+                self.handle_property_agent(street)
 
             elif self.agent.position == 33:
                 # perform community chest actions
@@ -1280,11 +1280,10 @@ class MonopolyBoardMCTS:
 
         elif chance_card == "Make general repairs on all your property. For each house pay £25. For each hotel pay £100.":
             cost = 25*self.agent.houses + 100*self.agent.hotels
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            self.handle_bank_payment_agent(cost)
 
         elif chance_card == "Speeding fine £15.":
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-            pass
+            self.handle_bank_payment_agent(15)
 
         elif chance_card == "Take a trip to King's Cross Station. If you pass Go, collect £200.":
             previous_position = self.agent.position
@@ -1295,11 +1294,12 @@ class MonopolyBoardMCTS:
             if previous_position > king_position:
                 self.agent.receive(200)
 
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            station = self.board[king_position]
+            self.handle_property_agent(station)
 
         elif chance_card == "You have been elected Chairman of the Board. Pay each player £50.":
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-            pass
+            for other_player in self.other_players:
+                self.handle_opponent_payment_agent(50, other_player)
 
         elif chance_card == "Your building loan matures. Collect £150.":
             self.agent.receive(150)
@@ -1319,8 +1319,7 @@ class MonopolyBoardMCTS:
             self.agent.receive(200)
         
         elif community_chest_card == "Doctor’s fee. Pay £50.":
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-            pass
+            self.handle_bank_payment_agent(50)
         
         elif community_chest_card == "From sale of stock you get £50.":
             self.agent.receive(50)
@@ -1350,19 +1349,17 @@ class MonopolyBoardMCTS:
             self.agent.receive(100)
         
         elif community_chest_card == "Pay hospital fees of £100.":
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-            pass
+            self.handle_bank_payment_agent(100)
         
         elif community_chest_card == "Pay school fees of £50.":
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
-            pass
+            self.handle_bank_payment_agent(50)
         
         elif community_chest_card == "Receive £25 consultancy fee.":
             self.agent.receive(25)
         
         elif community_chest_card == "You are assessed for street repairs. £40 per house. £115 per hotel.":
             cost = 40*self.agent.houses + 115*self.agent.hotels
-            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+            self.handle_bank_payment_agent(cost)
         
         elif community_chest_card == "You have won second prize in a beauty contest. Collect £10.":
             self.agent.receive(10)
@@ -1373,6 +1370,44 @@ class MonopolyBoardMCTS:
         else:
             # TO DO: RAISE CARD TYPE ERROR
             return
+        
+    def handle_property_agent(self, space, dice_roll = 0):
+        # if there is an owner, pay calculated rent on property if possible
+        if space.owner:
+            if space.type == "Street":
+                rent = space.calculate_rent()
+            elif space.type == "Station":
+                rent = space.calculate_rent(len(space.owner.stations))
+            elif space.type == "Utility":
+                rent = space.calculate_rent(dice_roll, len(space.owner.utilities))
+            else:
+                raise TypeError("Cannot pay rent on space of type" + space.type)  
+            
+            # pay rent if sufficient funds to do so
+            if self.agent.money >= rent:
+                self.agent.pay(rent)
+                space.owner.receive(rent)
+
+            # otherwise player owes money and must raise funds at next 'move'/child node
+            else:
+                self.agent.money_owed[space.owner] = rent
+
+        # otherwise player will have option to purchase property in next 'move'/child node
+        else:
+            return
+        
+    def handle_bank_payment_agent(self, amount):
+        if self.agent.money >= amount:
+            self.agent.pay(amount)
+        else:
+            self.agent.money_owed[None] = amount
+
+    def handle_opponent_payment_agent(self, amount, opponent):
+        if self.agent.money >= amount:
+            self.agent.pay(amount)
+            opponent.receive(amount)
+        else:
+            self.agent.money_owed[opponent] = amount
 
     def is_terminal(self):
         if len(self.players) < 2:

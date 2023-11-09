@@ -1175,6 +1175,143 @@ class MonopolyBoardMCTS:
 
         else:
             raise TypeError("Space of incorrect type found on board. Type: " + space.type)
+        
+    def perform_chance_agent(self, dice_roll):
+        chance_card = self.chance.choose_card()
+
+        if chance_card == "Advance to Go.":
+            self.agent.position = 0
+            self.agent.receive(200)
+
+        elif chance_card == "Advance to Trafalgar Square. If you pass Go, collect £200.":
+            previous_position = self.agent.position
+            traf_position = 24
+            self.agent.position = traf_position
+
+            # collect pass go money
+            if previous_position > traf_position:
+                self.agent.receive(200)
+
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+
+        elif chance_card == "Advance to Mayfair. If you pass Go, collect £200.":
+            previous_position = self.agent.position
+            mayf_position = 39
+            self.agent.position = mayf_position
+
+            # collect pass go money
+            if previous_position > mayf_position:
+                self.agent.receive(200)
+
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+
+        elif chance_card == "Advance to Pall Mall. If you pass Go, collect £200.":
+            previous_position = self.agent.position
+            pall_position = 11
+            self.agent.position = pall_position
+
+            # collect pass go money
+            if previous_position > pall_position:
+                self.agent.receive(200)
+
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+
+        elif chance_card == "Advance to the nearest Station. If unowned, you may buy it from the Bank. \
+            If owned, pay the owner twice the rental to which they are otherwise entitled.":
+            if 5 <= self.agent.position <= 14:
+                idx = 15
+                self.agent.position = idx
+            elif 15 <= self.agent.position <= 24:
+                idx = 25
+                self.agent.position = idx
+            elif 25 <= self.agent.position <= 34:
+                idx = 35
+                self.agent.position = idx
+            else:
+                idx = 5
+                self.agent.position = idx
+
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+
+        elif chance_card == "Advance token to nearest Utility. If unowned, you may buy it from the Bank. \
+            If owned, throw dice and pay owner a total ten times the amount thrown.":
+            if 12 <= self.agent.position <= 27:
+                idx = 28
+                self.agent.position = idx
+            else:
+                idx = 12
+                self.agent.position = idx
+
+            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+
+        elif chance_card == "Bank pays you a dividend of £50.":
+            self.agent.receive(50)
+
+        elif chance_card == "Get Out of Jail Free.":
+            self.agent.jail_cards += 1
+
+        elif chance_card == "Go back 3 Spaces.":
+            self.agent.move(-3)
+
+            # position of player is either community chest, vine street or income tax
+            if self.agent.position == 4:
+                # income tax
+                # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+                pass
+
+            elif self.agent.position == 19:
+                # vine street
+                # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+                pass
+
+            elif self.agent.position == 33:
+                # perform community chest actions
+                self.perform_community_chest_agent()
+
+            else:
+                # TO DO: ADD RAISE ERROR HERE
+                pass
+
+        elif chance_card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect £200.":
+            self.agent.position = 10
+            self.agent.in_jail = True
+
+        elif chance_card == "Make general repairs on all your property. For each house pay £25. For each hotel pay £100":
+            cost = 25*self.agent.houses + 100*self.agent.hotels
+            # TO DO: PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY) - PAY IF POSSIBLE, IF NOT KEEP TRACK
+
+        elif chance_card == "Speeding fine £15.":
+            if self.agent.money >= 15:
+                self.agent.pay(15)
+            else:
+                self.raise_funds(self.agent, 15)
+
+        elif chance_card == "Take a trip to King's Cross Station. If you pass Go, collect £200.":
+            previous_position = self.agent.position
+            king_position = 5
+            self.agent.position = king_position
+
+            # collect pass go money
+            if previous_position > king_position:
+                self.agent.receive(200)
+
+            # pay rent if owned, if not decide to purchase/not
+            station = self.board[king_position]
+            self.handle_property(self.agent, station)
+
+        elif chance_card == "You have been elected Chairman of the Board. Pay each player £50.":
+            for opponent in self.players:
+                if self.agent.money >= 50:
+                    self.agent.pay(50)
+                    opponent.receive(50)
+                else:
+                    self.raise_funds(opponent, 50)
+
+        elif chance_card == "Your building loan matures. Collect £150.":
+            self.agent.receive(150)
+
+        else:
+            return
 
     def is_terminal(self):
         if len(self.players) < 2:

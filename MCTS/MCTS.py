@@ -48,7 +48,7 @@ class MCTS:
         # if there are untried actions, randomly choose one & create child node
         if untried_actions:
             action = random.choice(untried_actions)
-            new_state = node.state.perform_action(action)
+            new_state = node.state.perform_action(action) # TO DO: MAKE SURE THE NEW STATE IS A COPY OF MONOPOLYBOARDMCTS
 
             # create child node for new action
             child = Node(new_state, action, parent = node)

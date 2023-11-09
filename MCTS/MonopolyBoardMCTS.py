@@ -11,6 +11,7 @@ from Street import Street
 from Tax import Tax
 from Utility import Utility
 import random
+import numpy as np
 class MonopolyBoardMCTS:
     """
     This class represents the Monopoly board and the game logic. It provides methods for creating 
@@ -1074,6 +1075,27 @@ class MonopolyBoardMCTS:
             else:
                 raise TypeError("Cannot purchase space of type" + prop.type)
         
+        # if player owes money, pay it
+        if len(self.agent.money_owed > 0):
+            for recipient, amount in self.agent.money_owed.items():
+
+                # money owed to another player is payed if possible
+                if recipient:
+                    if self.agent.money >= amount:
+                        self.agent.pay(amount)
+                        recipient.receive(amount)
+                        del self.agent.money_owed[recipient]
+                    else:
+                        pass
+
+                # money owed to the bank is payed if possible
+                else:
+                    if self.agent.money >= amount:
+                        self.agent.pay(amount)
+                        del self.agent.money_owed[recipient]
+                    else:
+                        pass
+        
         # end of player's turn
         if action == "End turn":
 
@@ -1420,6 +1442,5 @@ class MonopolyBoardMCTS:
             return False
         
     def calculate_reward(self):
-        # TO DO: EDIT THIS TO REFLECT REWARD (MAYBE RATIO OF AGENTS WEALTH TO THE AVERAGE OF OTHER PLAYERS WEALTH)
-        # return self.agent.wealth()/np.mean([other_player.wealth() for other_player in self.other_players])
-        return self.agent.wealth()
+        # TO DO: EDIT THIS TO REFLECT REWARD?
+        return self.agent.wealth()/np.mean([other_player.wealth() for other_player in self.other_players])

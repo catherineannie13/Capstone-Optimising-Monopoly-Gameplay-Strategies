@@ -69,6 +69,8 @@ class Player:
         self.bankrupt = False
         self.in_jail = False
         self.turns_in_jail = 0
+        self.double_rolled = False
+        self.num_doubles = 0
         self.jail_cards = 0
         self.houses = 0
         self.hotels = 0

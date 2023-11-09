@@ -1055,106 +1055,112 @@ class MonopolyBoardMCTS:
                 player.utilities.append(prop)
             else:
                 raise TypeError("Cannot purchase space of type" + prop.type)
-            
+        
         if action == "End turn":
-            # other players have their turns
-            for other_player in self.other_players:
-                self.take_turn(other_player)
 
-            # TO DO: POTENTIALLY MOVE REST OF THIS CODE INTO A SEPARATE METHOD?
-            # player rolls the dice
-            a_roll = random.randint(1, 6)
-            b_roll = random.randint(1, 6)
-            dice_roll = a_roll + b_roll
-
-            if player.in_jail:
-                player.turns_in_jail += 1
-
-                if player.turns_in_jail > 2:
-                    if a_roll == b_roll:
-                        player.in_jail = False
-                        player.turns_in_jail = 0
-                    else:
-                        return
-                    
-            if a_roll == b_roll:
-                # TO DO: HANDLE DOUBLES WITHIN A TURN
-                doubles += 1
-
-            # go to jail if third double in a row and end turn
-            # TO DO: ADAPT THIS TO HANDLE DOUBLES CORRECTLY
-            if doubles > 2:
-                player.position = 10
-                player.in_jail = True
+            # if the player rolled doubles, it is still their turn
+            if self.agent.double_rolled:
+                self.agent_turn()
                 return
-            
-            # player moves the number of spaces shown on the two dice combined
-            previous_position = player.position
-            player.move(dice_roll)
-            new_position = player.position
-            space = self.board[new_position]
 
-            # if the player passed go, collect the Go income
-            if previous_position > new_position:
-                player.receive(self.board[0].income)
-
-            #
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
-            if space.type == "Street":
-                pass
-
-            #
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
-            elif space.type == "Station":
-                pass
-
-            #
-            # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
-            elif space.type == "Utility":
-                pass
-
-            # 
-            # TO DO: CHANCE!
-            elif space.type == "Chance":
-                pass
-
-            # 
-            # TO DO: COMMNITY CHEST!
-            elif space.type == "Community Chest":
-                pass
-
-            # 
-            # TO DO: KEEP TRACK OF MONEY THAT THE PLAYER OWES AND TO WHOM/WHERE
-            elif space.type == "Tax":
-                pass
-
-            # no action is taken if the player lands on Go
-            elif space.type == "Go":
-                pass
-            
-            # no action is taken if the player lands on jail since they are just visiting
-            elif space.type == "Jail":
-                pass
-
-            # no action is taken if the player lands on free parking
-            elif space.type == "Free Parking":
-                pass
-
-            # player goes to jail and revoke pass go money immediately
-            elif space.type == "Go To Jail":
-                player.position = 10
-                player.in_jail = True
-
-                # in the case that the player goes to jail, they don't collect go money
-                player.pay(self.board[0].income)
-
+            # other players have their turns
             else:
-                raise TypeError("Space of incorrect type found on board. Type: " + space.type)
+                for other_player in self.other_players:
+                    self.take_turn(other_player)
 
-            # player takes another turn if they roll a double
-            # TO DO: work out how to deal with doubles!
-            if a_roll == b_roll:
-                pass
+                self.agent_turn()
+
+    def agent_turn(self):
+        # player rolls the dice
+        a_roll = random.randint(1, 6)
+        b_roll = random.randint(1, 6)
+        dice_roll = a_roll + b_roll
+
+        if self.agent.in_jail:
+            self.agent.turns_in_jail += 1
+
+            if self.agent.turns_in_jail > 2:
+                if a_roll == b_roll:
+                    self.agent.in_jail = False
+                    self.agent.turns_in_jail = 0
+                else:
+                    return
+                    
+        if a_roll == b_roll:
+            # TO DO: HANDLE DOUBLES WITHIN A TURN
+            self.agent.num_doubles += 1
+
+        # go to jail if third double in a row and end turn
+        # TO DO: ADAPT THIS TO HANDLE DOUBLES CORRECTLY
+        if self.agent.num_doubles > 2:
+            self.agent.position = 10
+            self.agent.in_jail = True
+            self.agent.num_doubles = 0
+            self.agent.double_rolled = False
+            return
+            
+        # player moves the number of spaces shown on the two dice combined
+        previous_position = self.agent.position
+        self.agent.move(dice_roll)
+        new_position = self.agent.position
+        space = self.board[new_position]
+
+        # if the player passed go, collect the Go income
+        if previous_position > new_position:
+            self.agent.receive(self.board[0].income)
+
+        #
+        # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
+        if space.type == "Street":
+            pass
+
+        #
+        # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
+        elif space.type == "Station":
+            pass
+
+        #
+        # TO DO: IF OWNED, PLAYER OWES MONEY (KEEP TRACK OF OWED MONEY)
+        elif space.type == "Utility":
+            pass
+
+        # 
+        # TO DO: CHANCE!
+        elif space.type == "Chance":
+            pass
+
+        # 
+        # TO DO: COMMNITY CHEST!
+        elif space.type == "Community Chest":
+            pass
+
+        # 
+        # TO DO: KEEP TRACK OF MONEY THAT THE PLAYER OWES AND TO WHOM/WHERE
+        elif space.type == "Tax":
+            pass
+
+        # no action is taken if the player lands on Go
+        elif space.type == "Go":
+            pass
+            
+        # no action is taken if the player lands on jail since they are just visiting
+        elif space.type == "Jail":
+            pass
+
+        # no action is taken if the player lands on free parking
+        elif space.type == "Free Parking":
+            pass
+
+        # player goes to jail and revoke pass go money immediately
+        elif space.type == "Go To Jail":
+            self.agent.position = 10
+            self.agent.in_jail = True
+
+            # in the case that the player goes to jail, they don't collect go money
+            self.agent.pay(self.board[0].income)
+
+        else:
+            raise TypeError("Space of incorrect type found on board. Type: " + space.type)
 
     def is_terminal(self):
         if len(self.players) < 2:

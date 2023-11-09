@@ -914,19 +914,7 @@ class MonopolyBoardMCTS:
                 player.bankrupt = True
 
     def get_legal_actions(self):
-        # TO DO: if the player is in jail and has been there for 3 rounds, they must leave jail! - only options are to pay or use get out jail card, and if not then the only options are to mortgage/sell houses
-        # TO DO: if the player rolled doubles, one of their legal actions is to roll again - OR should this be incorporated in the "End turn" action?
-        # TO DO: if the player owes money, the only options are to sell houses/mortgage, THEY CANNOT END THEIR TURN!
-        legal_actions = ["End turn"]
-
-        # player can unmortgage mortgaged properties at any point given they have enough money
-        mortgaged_streets = [prop for prop in self.agent.properties if prop.is_mortgaged]
-        mortgaged_stations = [station for station in self.agent.stations if station.is_mortgaged]
-        mortgaged_utilities = [utility for utility in self.agent.utilities if utility.is_mortgaged]
-        mortgaged_properties = mortgaged_streets + mortgaged_stations + mortgaged_utilities
-        for prop in mortgaged_properties:
-            if self.agent.money >= prop.calculate_unmortgage_price():
-                legal_actions.append(f"Unmortgage {prop.name}")
+        legal_actions = []
 
         # player can mortgage unmortgaged properties at any point given they are not built on
         unmortgaged_streets = [prop for prop in self.agent.properties if not prop.is_mortgaged and prop.num_houses == 0]
@@ -950,39 +938,55 @@ class MonopolyBoardMCTS:
             if all(house_discrepencies):
                 legal_actions.append(f"Sell house on {prop.name}")
 
-        # player can buy hotels at any point if they have 4 houses, no hotel, enough money & <=1 house discrepency
-        buy_hotel_streets = [prop for prop in self.agent.properties if prop.num_houses==4 and not prop.hotel]
-        for prop in buy_hotel_streets:
-            new_prop_build = prop.num_houses + prop.hotel + 1
-            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
+        # if the player owes money, their only valid options are to mortgage, sell houses & hotels (above)
+        if len(self.agent.money_owed) == 0:
 
-            if all(house_discrepencies) and self.agent.money >= prop.house_price:
-                legal_actions.append(f"Buy hotel on {prop.name}")
+            # if the player is in jail, legal options include using jail cards/paying
+            if self.agent.in_jail:
+                if self.agent.jail_cards > 0:
+                    legal_actions.append("Use Get Out of Jail Free card")
+                if self.agent.money >= 50:
+                    legal_actions.append("Pay 50 to get out of jail")
 
-        # player can buy houses at any point if they have fewer than 4 houses, enough money, a set & <= house discrepency
-        buy_house_streets = [prop for prop in self.agent.properties if prop.num_houses < 4]
-        for prop in buy_house_streets:
-            group = self.property_sets[prop.group]
-            player_group = self.agent.property_sets[prop.group]
-            new_prop_build = prop.num_houses + prop.hotel + 1
-            house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
+            # if the player is in jail and must leave, their only valid options are mortgaging, selling houses/hotels, or getting out of jail (above)
+            if not (self.agent.in_jail and self.agent.turns_in_jail > 2):
 
-            if all(house_discrepencies) and self.agent.money >= prop.house_price and sorted(group) == sorted(player_group):
-                legal_actions.append(f"Buy house on {prop.name}")
+                # player can unmortgage mortgaged properties at any point given they have enough money
+                mortgaged_streets = [prop for prop in self.agent.properties if prop.is_mortgaged]
+                mortgaged_stations = [station for station in self.agent.stations if station.is_mortgaged]
+                mortgaged_utilities = [utility for utility in self.agent.utilities if utility.is_mortgaged]
+                mortgaged_properties = mortgaged_streets + mortgaged_stations + mortgaged_utilities
+                for prop in mortgaged_properties:
+                    if self.agent.money >= prop.calculate_unmortgage_price():
+                        legal_actions.append(f"Unmortgage {prop.name}")
 
-        # if the player is in jail, legal options include using jail cards/paying
-        # TO DO: think about legalities of this step
-        if self.agent.in_jail:
-            if self.agent.jail_cards > 0:
-                legal_actions.append("Use Get Out of Jail Free card")
-            if self.agent.money >= 50:
-                legal_actions.append("Pay 50 to get out of jail")
+                # player can buy hotels at any point if they have 4 houses, no hotel, enough money & <=1 house discrepency
+                buy_hotel_streets = [prop for prop in self.agent.properties if prop.num_houses==4 and not prop.hotel]
+                for prop in buy_hotel_streets:
+                    new_prop_build = prop.num_houses + prop.hotel + 1
+                    house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
 
-        # if the player is on an unowned property, they can purchase it given they have enough money
-        space = self.board[self.agent.position]
-        is_property = (space.type == "Street" or space.type == "Station" or space.type == "Utility")
-        if is_property and space.owner == None and self.agent.money >= space.price:
-            legal_actions.append(f"Purchase {space.name}")
+                    if all(house_discrepencies) and self.agent.money >= prop.house_price:
+                        legal_actions.append(f"Buy hotel on {prop.name}")
+
+                # player can buy houses at any point if they have fewer than 4 houses, enough money, a set & <= house discrepency
+                buy_house_streets = [prop for prop in self.agent.properties if prop.num_houses < 4]
+                for prop in buy_house_streets:
+                    group = self.property_sets[prop.group]
+                    player_group = self.agent.property_sets[prop.group]
+                    new_prop_build = prop.num_houses + prop.hotel + 1
+                    house_discrepencies = [abs(new_prop_build - i.num_houses - i.hotel) <= 1 for i in self.agent.property_sets[prop.group]]
+
+                    if all(house_discrepencies) and self.agent.money >= prop.house_price and sorted(group) == sorted(player_group):
+                        legal_actions.append(f"Buy house on {prop.name}")
+
+                # if the player is on an unowned property, they can purchase it given they have enough money
+                space = self.board[self.agent.position]
+                is_property = (space.type == "Street" or space.type == "Station" or space.type == "Utility")
+                if is_property and space.owner == None and self.agent.money >= space.price:
+                    legal_actions.append(f"Purchase {space.name}")
+
+                legal_actions.append("End turn")
 
         return legal_actions
 

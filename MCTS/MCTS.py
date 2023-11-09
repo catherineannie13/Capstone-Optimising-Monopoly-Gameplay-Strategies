@@ -64,7 +64,6 @@ class MCTS:
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
-        # TO DO: EDIT THIS METHOD SO THAT THE GAME IS PLAYED OUT CORRECTLY (INCLUDING OPPONENTS' TURNS)
         state = node.state
 
         while not state.is_terminal():
@@ -76,13 +75,6 @@ class MCTS:
                 action = random.choice(legal_actions)
                 state = state.perform_action(action)
 
-            # TO DO: edit to raise error (if the state is not terminal, there should be legal actions to take) - is this true??
-            # TO DO: is it a typeError or a different kind?
-            else:
-                raise GameLogicError("There are no legal actions, but the state of the game is not terminal")
-        
-        # TO DO: wealth calculation
-        # MAYBE: WEALTH MIGHT BE GIVEN BY THE RATIO OF THE AGENTS WEALTH TO THE AVERAGE OF OTHER PLAYERS' WEALTH
         return state.calculate_reward()
 
 

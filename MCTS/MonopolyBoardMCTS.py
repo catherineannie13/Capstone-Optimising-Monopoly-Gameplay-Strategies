@@ -1077,7 +1077,7 @@ class MonopolyBoardMCTS:
                 raise TypeError("Cannot purchase space of type" + prop.type)
         
         # if player owes money, pay it
-        if len(self.agent.money_owed > 0):
+        if len(self.agent.money_owed) > 0:
             for recipient, amount in self.agent.money_owed.items():
 
                 # money owed to another player is payed if possible
@@ -1328,7 +1328,7 @@ class MonopolyBoardMCTS:
             self.agent.receive(150)
 
         else:
-            # TO DO: RAISE CARD TYPE ERROR
+            # TO DO: RAISE CARD TYPE ERROR (AND ABOVE FOR OTHER PLAYERS)
             return
         
     def perform_community_chest_agent(self):
@@ -1391,7 +1391,7 @@ class MonopolyBoardMCTS:
             self.agent.receive(100)
         
         else:
-            # TO DO: RAISE CARD TYPE ERROR
+            # TO DO: RAISE CARD TYPE ERROR (AND ABOVE FOR OTHER PLAYERS)
             return
         
     def handle_property_agent(self, space, dice_roll = 0):

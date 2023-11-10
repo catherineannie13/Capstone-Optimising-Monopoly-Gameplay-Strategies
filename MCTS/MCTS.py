@@ -1,6 +1,6 @@
-from Node import Node, ChildNotFoundError
 import numpy as np
 import random
+import copy
 class MCTS:
     def __init__(self, root_state, max_iterations):
         self.root = Node(root_state)
@@ -48,7 +48,8 @@ class MCTS:
         # if there are untried actions, randomly choose one & create child node
         if untried_actions:
             action = random.choice(untried_actions)
-            new_state = node.state.perform_action(action) # TO DO: MAKE SURE THE NEW STATE IS A COPY OF MONOPOLYBOARDMCTS
+            new_state = copy.deepcopy(node.state)
+            new_state.perform_action(action)
 
             # create child node for new action
             child = Node(new_state, action, parent = node)
@@ -71,9 +72,8 @@ class MCTS:
 
             if legal_actions:
                 # TO DO: modify to follow strategy rather than random choice
-                # TO DO: call the relevant method from MonopolyGameMCTS to perform the action
                 action = random.choice(legal_actions)
-                state = state.perform_action(action)
+                state.perform_action(action)
 
         return state.calculate_reward()
 
@@ -109,6 +109,6 @@ class MCTS:
         best_action = self.select_best_action(self.root)
 
         return best_action
-        
+
 class GameLogicError(Exception):
     pass

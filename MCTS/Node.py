@@ -15,7 +15,7 @@ class Node:
 
     def get_child_with_action(self, action):
         for child in self.children:
-            if child.state.action == action:
+            if child.action == action:
                 return child
 
         raise ChildNotFoundError(f"Child with action {action} does not exist")

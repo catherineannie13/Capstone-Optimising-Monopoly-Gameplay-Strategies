@@ -121,6 +121,9 @@ class MonopolyBoardMCTS:
 
         self.strategy = Strategy()
 
+    def __repr__(self):
+        return f'Monopoly Board'
+
     def create_properties(self):
         """
         This method creates instances of the class Street for each street property on the Monopoly board.

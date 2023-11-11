@@ -107,6 +107,7 @@ class MonopolyBoardMCTS:
         self.property_sets = {"brown":[], "lightblue":[], "pink":[], "orange":[], 
                               "red":[], "yellow":[], "green":[], "darkblue":[]}
         self.properties_dict = {}
+        self.rounds = 0
 
         self.create_properties()
         self.create_stations()
@@ -1107,6 +1108,7 @@ class MonopolyBoardMCTS:
         
         # end of player's turn
         if action == "End turn":
+            self.rounds += 1
 
             # if the player rolled doubles, they go again
             if self.agent.double_rolled:

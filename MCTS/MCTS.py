@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import copy
+from tqdm import tqdm
 class MCTS:
     def __init__(self, root_state, max_iterations):
         self.root = Node(root_state)
@@ -35,7 +36,7 @@ class MCTS:
 
     def selection(self, node):
         # traverse tree until terminal node or node with unexplored children is reached
-        while not node.is_terminal() and len(node.children) == len(node.state.get_legal_actions()):
+        while not node.is_terminal() and len(node.children) < len(node.state.get_legal_actions()):
             best_action = self.select_best_action(node)
             node = node.get_child_with_action(best_action)
 
@@ -123,11 +124,15 @@ class MCTS:
 
     def run_game(self, max_actions=1000):
         actions = 0
+        pbar = tqdm(total=max_actions, desc="Running MCTS game")
 
         # play game until a maximum number of actions or game has ended
         while actions < max_actions and not self.root.is_terminal():
             self.run()
             actions += 1
+            pbar.update(1)
+
+        pbar.close()
 
 class GameLogicError(Exception):
     pass

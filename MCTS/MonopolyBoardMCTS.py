@@ -1024,6 +1024,8 @@ class MonopolyBoardMCTS:
             hotel_value = prop.calculate_house_sale_value()
             self.agent.receive(hotel_value)
             prop.hotel = False
+            self.agent.houses += 4
+            self.agent.hotels -= 1
 
         # sell house on property
         if action.startswith("Sell house on"):
@@ -1033,6 +1035,7 @@ class MonopolyBoardMCTS:
             house_value = prop.calculate_house_sale_value()
             self.agent.receive(house_value)
             prop.num_houses -= 1
+            self.agent.houses -= 1
 
         # buy hotel on property
         if action.startswith("Buy hotel on"):
@@ -1041,6 +1044,8 @@ class MonopolyBoardMCTS:
 
             self.agent.pay(prop.house_price)
             prop.hotel = True
+            self.agent.hotels += 1
+            self.agent.houses -= 4
 
         # buy house on property
         if action.startswith("Buy house on"):
@@ -1049,6 +1054,7 @@ class MonopolyBoardMCTS:
 
             self.agent.pay(prop.house_price)
             prop.num_houses += 1
+            self.agent.houses += 1
 
         # use get out of jail free card
         if action == "Use Get Out of Jail Free card":

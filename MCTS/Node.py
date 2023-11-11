@@ -7,6 +7,9 @@ class Node:
         self.action = action
         self.parent = parent
 
+    def __repr__(self):
+        return f"{self.action}"
+
     def is_terminal(self):
         if self.state.agent.bankrupt or all([other_player.bankrupt for other_player in self.state.other_players]):
             return True

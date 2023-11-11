@@ -5,6 +5,7 @@ class MCTS:
     def __init__(self, root_state, max_iterations):
         self.root = Node(root_state)
         self.max_iterations = max_iterations
+        self.best_actions = []
 
     def uct(self, node, exploration_weight = 1):
         # return infinity for unvisited nodes
@@ -65,7 +66,7 @@ class MCTS:
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
-        state = node.state
+        state = copy.deepcopy(node.state)
 
         while not state.is_terminal():
             legal_actions = state.get_legal_actions()
@@ -109,6 +110,24 @@ class MCTS:
         best_action = self.select_best_action(self.root)
 
         return best_action
+    
+    def run(self):
+        best_action = self.search()
+        self.best_actions.append(best_action)
+
+        # perform best action to transition to new root node
+        self.root.state.perform_action(best_action)
+            
+        # update root node to the child node corresponding to best action
+        self.root = self.root.get_child_with_action(best_action)
+
+    def run_game(self, max_actions=1000):
+        actions = 0
+
+        # play game until a maximum number of actions or game has ended
+        while actions < max_actions and not self.root.is_terminal():
+            self.run()
+            actions += 1
 
 class GameLogicError(Exception):
     pass

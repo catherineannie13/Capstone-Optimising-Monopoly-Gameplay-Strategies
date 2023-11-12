@@ -3,6 +3,7 @@ import random
 import copy
 from tqdm import tqdm
 import torch.optim as optim
+import torch.nn as nn
 import torch
 class MCTS:
     def __init__(self, root_state, max_iterations, exploration_weight = 1, state_size = 1000):

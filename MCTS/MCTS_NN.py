@@ -2,12 +2,17 @@ import numpy as np
 import random
 import copy
 from tqdm import tqdm
+import torch.optim as optim
+import torch
 class MCTS:
-    def __init__(self, root_state, max_iterations, exploration_weight = 1):
+    def __init__(self, root_state, max_iterations, exploration_weight = 1, state_size = 1000):
         self.root = Node(root_state)
         self.max_iterations = max_iterations
         self.best_actions = []
         self.exploration_weight = exploration_weight
+        self.q_network = NN(input_size=state_size, output_size=len(root_state.get_legal_actions()))
+        self.optimizer = optim.Adam(self.q_network.parameters(), lr=0.001)
+        self.criterion = nn.MSELoss()
 
     def uct(self, node):
         # return infinity for unvisited nodes
@@ -78,19 +83,34 @@ class MCTS:
             legal_actions = state.get_legal_actions()
 
             if legal_actions:
-                # TO DO: modify to follow strategy rather than random choice
-                action = random.choice(legal_actions)
+                # use neural network to predict Q-values
+                state_tensor = torch.tensor(preprocess_state(state)).float().unsqueeze(0)
+                q_values = self.q_network(state_tensor).detach().numpy()
+
+                # Select and perform action with highest Q-value
+                action = np.argmax(q_values)
                 state.perform_action(action)
 
         return state.calculate_reward()
 
     def backpropagation(self, node, reward):
-        # traverse up the tree to the root
         while node is not None:
+            state_tensor = torch.tensor(preprocess_state(node.state)).float().unsqueeze(0)
+            q_values = self.q_network(state_tensor)
 
-            # modify node properties
-            node.visits += 1
-            node.total_reward += reward
+            # choose best action based on Q-values
+            best_action = self.select_best_action(node)
+            best_action_index = node.state.get_legal_actions().index(best_action)
+
+            # Q-learning update
+            q_values[0, best_action_index] += reward
+
+            # Compute loss and perform gradient descent step
+            target_q_values = torch.tensor(q_values).float()
+            loss = self.criterion(self.q_network(state_tensor), target_q_values)
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
 
             # traverse up the tree until root node is reached
             node = node.parent

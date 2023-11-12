@@ -3,29 +3,30 @@ import random
 import copy
 from tqdm import tqdm
 class MCTS:
-    def __init__(self, root_state, max_iterations):
+    def __init__(self, root_state, max_iterations, exploration_weight = 1):
         self.root = Node(root_state)
         self.max_iterations = max_iterations
         self.best_actions = []
+        self.exploration_weight = exploration_weight
 
-    def uct(self, node, exploration_weight = 1):
+    def uct(self, node):
         # return infinity for unvisited nodes
         if node.visits == 0:
             return float('inf')
         
         # 2 components of UCT
         exploitation = node.total_reward/node.visits
-        exploration = exploration_weight*(np.log(node.parent.visits)/node.visits)**0.5
+        exploration = self.exploration_weight*(np.log(node.parent.visits)/node.visits)**0.5
 
         return exploitation + exploration
     
-    def select_best_action(self, node, exploration_weight = 1):
+    def select_best_action(self, node):
         best_action = None
         best_value = float('-inf')
 
         # find the child node with the highest UCT value
         for child in node.children:
-            uct_value = self.uct(child, exploration_weight)
+            uct_value = self.uct(child)
 
             # update best child node choice
             if uct_value > best_value:

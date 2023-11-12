@@ -36,9 +36,13 @@ class MCTS:
 
     def selection(self, node):
         # traverse tree until terminal node or node with unexplored children is reached
-        while not node.is_terminal() and len(node.children) < len(node.state.get_legal_actions()):
+        while not node.is_terminal() and len(node.children) == len(node.state.get_legal_actions()):
             best_action = self.select_best_action(node)
-            node = node.get_child_with_action(best_action)
+            
+            if best_action:
+                node = node.get_child_with_action(best_action)
+            else:
+                return node
 
         return node
 

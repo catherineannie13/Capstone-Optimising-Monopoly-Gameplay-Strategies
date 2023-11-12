@@ -14,6 +14,7 @@ class MCTS:
         self.q_network = NN(input_size=state_size, output_size=len(root_state.get_legal_actions()))
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=0.001)
         self.criterion = nn.MSELoss()
+        self.state_preprocessor = StatePreprocessor(root_state)
 
     def uct(self, node):
         # return infinity for unvisited nodes
@@ -85,7 +86,7 @@ class MCTS:
 
             if legal_actions:
                 # use neural network to predict Q-values
-                state_tensor = torch.tensor(preprocess_state(state)).float().unsqueeze(0)
+                state_tensor = torch.tensor(self.state_preprocessor.preprocess_state(state)).float().unsqueeze(0)
                 q_values = self.q_network(state_tensor).detach().numpy()
 
                 # Select and perform action with highest Q-value
@@ -96,7 +97,7 @@ class MCTS:
 
     def backpropagation(self, node, reward):
         while node is not None:
-            state_tensor = torch.tensor(preprocess_state(node.state)).float().unsqueeze(0)
+            state_tensor = torch.tensor(self.state_preprocessor.preprocess_state(node.state)).float().unsqueeze(0)
             q_values = self.q_network(state_tensor)
 
             # choose best action based on Q-values

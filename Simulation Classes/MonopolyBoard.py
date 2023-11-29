@@ -7,6 +7,7 @@ from Jail import Jail
 from Player import Player
 from Station import Station
 from Strategy import Strategy
+from RandomStrategy import RandomStrategy
 from Street import Street
 from Tax import Tax
 from Utility import Utility

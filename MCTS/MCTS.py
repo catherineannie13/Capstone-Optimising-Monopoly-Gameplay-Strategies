@@ -79,7 +79,14 @@ class MCTS:
 
             if legal_actions:
                 # TO DO: modify to follow strategy rather than random choice
+                # TO DO: the code should take the state (particularly the agent player) and determine which move to make based on strategy
                 action = random.choice(legal_actions)
+                # player unmortgages properties if possible
+                # player builds on properties if possible (only one house/hotel per turn)
+                # player leaves jail first with a jail card if they have one, if not with 50 if they have it
+                # if land on property: player buys if they either have fewer than 3 properties or if they already have properties belonging to that set
+                # if the player cannot pay: player first sells hotels/houses on most expensive properties, then mortgages most expensive properties until they have enough money
+                
                 state.perform_action(action)
 
         return state.calculate_reward()

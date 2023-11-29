@@ -1,7 +1,7 @@
 class Strategy:
     """
     This class represents a base strategy for players playing a Monopoly game. It provides methods 
-    for handling decisions such as whether or not to purchase a propery, whether or not to build on
+    for handling decisions such as whether or not to purchase a property, whether or not to build on
     a property, and whether or not to pay to get out of jail.
 
     Attributes

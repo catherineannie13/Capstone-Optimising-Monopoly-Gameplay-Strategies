@@ -15,7 +15,7 @@ class State:
                       agent.in_jail, agent.turns_in_jail, agent.double_rolled,
                       agent.num_doubles, agent.jail_cards]
 
-        for player in self.board.other_players:
+        for player in board.other_players:
             self.other_players.append([player.name, player.position, player.money, player.bankrupt,
                                        player.in_jail, player.turns_in_jail, player.double_rolled,
                                        player.num_doubles, player.jail_cards])

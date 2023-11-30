@@ -2,6 +2,7 @@ import numpy as np
 import random
 import copy
 from tqdm import tqdm
+from Node import Node
 class MCTS:
     def __init__(self, root_state, max_iterations, exploration_weight = 1):
         self.root = Node(root_state)

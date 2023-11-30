@@ -416,6 +416,7 @@ class MonopolyBoard:
         # play continues until there is a winner/stopping condition met
         while len([player for player in self.players if not player.bankrupt]) >= 2 and i < stopping_condition:
             i += 1
+            self.rounds += 1
             for player in self.players:
                 self.take_turn(player)
             

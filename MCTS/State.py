@@ -1,3 +1,5 @@
+from Player import Player
+from MonopolyBoardMCTS import MonopolyBoardMCTS 
 class State:
     def __init__(self):
         self.rounds = None

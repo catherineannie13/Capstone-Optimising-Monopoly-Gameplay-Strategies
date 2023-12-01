@@ -127,6 +127,7 @@ class State:
         return board
     
     def preprocess_state(self):
+        # TO DO: ADAPT TO HANDLE BOOLEANS AND STRINGS AND NONETYPES!
         state_representation = []
         state_representation.append(self.rounds)
         state_representation.extend(self.agent[:-1])

@@ -2,6 +2,7 @@ import numpy as np
 import random
 import copy
 from Node import Node
+from State import State
 from StatePreprocessor import StatePreprocessor
 from NN import NN
 from tqdm import tqdm
@@ -46,8 +47,12 @@ class MCTS:
         return best_action
 
     def selection(self, node):
+        # convert state back to Monopoly board to get legal actions for that state
+        board = node.state.to_monopoly_board()
+        legal_actions = board.get_legal_actions()
+
         # traverse tree until terminal node or node with unexplored children is reached
-        while not node.is_terminal() and len(node.children) == len(node.state.get_legal_actions()):
+        while not node.is_terminal() and len(node.children) == len(legal_actions):
             best_action = self.select_best_action(node)
             
             if best_action:
@@ -58,15 +63,22 @@ class MCTS:
         return node
 
     def expansion(self, node):
-        legal_actions = node.state.get_legal_actions()
+        # convert state back to Monopoly board to get legal actions for that state
+        board = node.state.to_monopoly_board()
+        legal_actions = board.get_legal_actions()
+
+        # get untried actions
         children_actions = [child.action for child in node.children]
         untried_actions = [action for action in legal_actions if action not in children_actions]
 
         # if there are untried actions, randomly choose one & create child node
         if untried_actions:
             action = random.choice(untried_actions)
-            new_state = copy.deepcopy(node.state)
-            new_state.perform_action(action)
+            board.perform_action(action)
+
+            # create new state from Monopoly board for child node
+            new_state = State()
+            new_state.from_monopoly_board(board)
 
             # create child node for new action
             child = Node(new_state, action, parent = node)
@@ -79,28 +91,32 @@ class MCTS:
 
             # TO DO: maybe there is a better way to keep track of the child node with the best action
             best_action = self.select_best_action(node)
+            if not best_action: # PERHAPS NOT NECESSARY
+                return node # PERHAPS NOT NECESSARY
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
-        state = copy.deepcopy(node.state)
+        board = node.state.to_monopoly_board()
 
-        while not state.is_terminal():
-            legal_actions = state.get_legal_actions()
+        while not board.is_terminal():
+            legal_actions = board.get_legal_actions()
 
             if legal_actions:
                 # use neural network to predict Q-values
-                state_tensor = torch.tensor(self.state_preprocessor.preprocess_state(state)).float().unsqueeze(0)
+                state = State()
+                state.to_monopoly_board(board)
+                state_tensor = torch.tensor(state.preprocess_state()).float().unsqueeze(0)
                 q_values = self.q_network(state_tensor).detach().numpy()
 
-                # Select and perform action with highest Q-value
+                # select and perform action with highest Q-value
                 action = np.argmax(q_values)
-                state.perform_action(action)
+                board.perform_action(action)
 
-        return state.calculate_reward()
+        return board.calculate_reward()
 
     def backpropagation(self, node, reward):
         while node is not None:
-            state_tensor = torch.tensor(self.state_preprocessor.preprocess_state(node.state)).float().unsqueeze(0)
+            state_tensor = torch.tensor(node.state.preprocess_state()).float().unsqueeze(0)
             q_values = self.q_network(state_tensor)
 
             # choose best action based on Q-values
@@ -110,7 +126,7 @@ class MCTS:
             # Q-learning update
             q_values[0, best_action_index] += reward
 
-            # Compute loss and perform gradient descent step
+            # compute loss and perform gradient descent
             target_q_values = torch.tensor(q_values).float()
             loss = self.criterion(self.q_network(state_tensor), target_q_values)
             self.optimizer.zero_grad()
@@ -144,11 +160,13 @@ class MCTS:
     
     def run(self):
         best_action = self.search()
+
+        # if there is no best action, there is no action choice at all
+        if not best_action: # PERHAPS NOT NECESSARY
+            return # PERHAPS NOT NECESSARY
+        
         self.best_actions.append(best_action)
 
-        # perform best action to transition to new root node
-        self.root.state.perform_action(best_action)
-            
         # update root node to the child node corresponding to best action
         self.root = self.root.get_child_with_action(best_action)
 

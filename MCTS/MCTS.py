@@ -26,9 +26,6 @@ class MCTS:
         best_action = None
         best_value = float('-inf')
 
-        #if len(node.children) == 0:
-        #    print('UH OH: node has no children!')
-
         # find the child node with the highest UCT value
         for child in node.children:
             uct_value = self.uct(child)
@@ -73,15 +70,10 @@ class MCTS:
             # create new state from Monopoly board for child node
             new_state = State()
             new_state.from_monopoly_board(board)
-            #new_state = copy.deepcopy(node.state)
-            #new_state.perform_action(action)
 
             # create child node for new action
             child = Node(new_state, action, parent = node)
             node.children.append(child)
-
-            #print(action)
-
             return child
         
         # if all actions have been tried, use UCT to choose child
@@ -89,13 +81,11 @@ class MCTS:
 
             # TO DO: maybe there is a better way to keep track of the child node with the best action
             best_action = self.select_best_action(node)
-            if not best_action:
-                return node
-            #print(best_action)
+            if not best_action: # PERHAPS NOT NECESSARY
+                return node # PERHAPS NOT NECESSARY
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
-        #state = copy.deepcopy(node.state)
         board = node.state.to_monopoly_board()
 
         while not board.is_terminal():
@@ -144,8 +134,6 @@ class MCTS:
             # backpropagation phase
             self.backpropagation(node, reward)
 
-            #print(node.action)
-
         # select the best action to take from the root node
         best_action = self.select_best_action(self.root)
 
@@ -155,14 +143,10 @@ class MCTS:
         best_action = self.search()
 
         # if there is no best action, there is no action choice at all
-        if not best_action:
-            return
+        if not best_action: # PERHAPS NOT NECESSARY
+            return # PERHAPS NOT NECESSARY
 
         self.best_actions.append(best_action)
-
-        # TO DO: IS THIS STEP NECESSARY?
-        # perform best action to transition to new root node
-        #self.root.state.perform_action(best_action)
             
         # update root node to the child node corresponding to best action
         self.root = self.root.get_child_with_action(best_action)

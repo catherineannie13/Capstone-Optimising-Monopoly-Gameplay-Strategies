@@ -3,6 +3,7 @@ import random
 import copy
 from tqdm import tqdm
 from Node import Node
+from State import State
 class MCTS:
     def __init__(self, root_state, max_iterations, exploration_weight = 1):
         self.root = Node(root_state)
@@ -25,6 +26,9 @@ class MCTS:
         best_action = None
         best_value = float('-inf')
 
+        #if len(node.children) == 0:
+        #    print('UH OH: node has no children!')
+
         # find the child node with the highest UCT value
         for child in node.children:
             uct_value = self.uct(child)
@@ -37,8 +41,12 @@ class MCTS:
         return best_action
 
     def selection(self, node):
+        # convert state back to Monopoly board to get legal actions for that state
+        board = node.state.to_monopoly_board()
+        legal_actions = board.get_legal_actions()
+
         # traverse tree until terminal node or node with unexplored children is reached
-        while not node.is_terminal() and len(node.children) == len(node.state.get_legal_actions()):
+        while not node.is_terminal() and len(node.children) == len(legal_actions):
             best_action = self.select_best_action(node)
             
             if best_action:
@@ -49,19 +57,30 @@ class MCTS:
         return node
 
     def expansion(self, node):
-        legal_actions = node.state.get_legal_actions()
+        # convert state back to Monopoly board to get legal actions for that state
+        board = node.state.to_monopoly_board()
+        legal_actions = board.get_legal_actions()
+
+        # get untried actions
         children_actions = [child.action for child in node.children]
         untried_actions = [action for action in legal_actions if action not in children_actions]
 
         # if there are untried actions, randomly choose one & create child node
         if untried_actions:
             action = random.choice(untried_actions)
-            new_state = copy.deepcopy(node.state)
-            new_state.perform_action(action)
+            board.perform_action(action)
+
+            # create new state from Monopoly board for child node
+            new_state = State()
+            new_state.from_monopoly_board(board)
+            #new_state = copy.deepcopy(node.state)
+            #new_state.perform_action(action)
 
             # create child node for new action
             child = Node(new_state, action, parent = node)
             node.children.append(child)
+
+            #print(action)
 
             return child
         
@@ -70,13 +89,17 @@ class MCTS:
 
             # TO DO: maybe there is a better way to keep track of the child node with the best action
             best_action = self.select_best_action(node)
+            if not best_action:
+                return node
+            #print(best_action)
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
-        state = copy.deepcopy(node.state)
+        #state = copy.deepcopy(node.state)
+        board = node.state.to_monopoly_board()
 
-        while not state.is_terminal():
-            legal_actions = state.get_legal_actions()
+        while not board.is_terminal():
+            legal_actions = board.get_legal_actions()
 
             if legal_actions:
                 # TO DO: modify to follow strategy rather than random choice
@@ -88,9 +111,10 @@ class MCTS:
                 # if land on property: player buys if they either have fewer than 3 properties or if they already have properties belonging to that set
                 # if the player cannot pay: player first sells hotels/houses on most expensive properties, then mortgages most expensive properties until they have enough money
                 
-                state.perform_action(action)
+                board.perform_action(action)
 
-        return state.calculate_reward()
+        # TO DO: PERHAPS DELETE STATE COPY AFTER USING IN SIMULATION (WE DON'T NEED IT ANYMORE)
+        return board.calculate_reward()
 
     def backpropagation(self, node, reward):
         # traverse up the tree to the root
@@ -120,6 +144,8 @@ class MCTS:
             # backpropagation phase
             self.backpropagation(node, reward)
 
+            #print(node.action)
+
         # select the best action to take from the root node
         best_action = self.select_best_action(self.root)
 
@@ -127,10 +153,16 @@ class MCTS:
     
     def run(self):
         best_action = self.search()
+
+        # if there is no best action, there is no action choice at all
+        if not best_action:
+            return
+
         self.best_actions.append(best_action)
 
+        # TO DO: IS THIS STEP NECESSARY?
         # perform best action to transition to new root node
-        self.root.state.perform_action(best_action)
+        #self.root.state.perform_action(best_action)
             
         # update root node to the child node corresponding to best action
         self.root = self.root.get_child_with_action(best_action)

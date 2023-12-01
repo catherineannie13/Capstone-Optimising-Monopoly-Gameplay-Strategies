@@ -13,7 +13,7 @@ class Node:
     def is_terminal(self):
 
         # game ends when either the agent is bankrupt or the agent won
-        if self.state.agent.bankrupt or all([other_player.bankrupt for other_player in self.state.other_players]):
+        if self.state.agent[3] or all([other_player[3] for other_player in self.state.other_players]):
             return True
         else:
             return False

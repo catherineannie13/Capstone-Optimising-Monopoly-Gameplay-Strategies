@@ -5,9 +5,7 @@ class RandomStrategy:
 
     def decide_to_buy(self, player, space):
         if player.money >= space.price:
-
             return random.choice([True, False])
-
         else:
             return False
         
@@ -16,7 +14,7 @@ class RandomStrategy:
 
         # get property groups that player owns
         property_sets = [(group, properties) for group, properties in player.property_sets.items()]
-        random.shuffle(property_sets)
+        random.shuffle(property_sets) 
 
         for group, properties in property_sets:
             while money_raised < money_needed:

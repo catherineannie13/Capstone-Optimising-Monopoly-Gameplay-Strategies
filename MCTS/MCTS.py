@@ -5,9 +5,10 @@ from tqdm import tqdm
 from Node import Node
 from State import State
 class MCTS:
-    def __init__(self, root_state, max_iterations, exploration_weight = 1):
+    def __init__(self, root_state, max_iterations, exploration_weight = 1, max_simulations = 1000):
         self.root = Node(root_state)
         self.max_iterations = max_iterations
+        self.max_simulations = max_simulations
         self.best_actions = []
         self.exploration_weight = exploration_weight
 
@@ -87,8 +88,9 @@ class MCTS:
 
     def simulation(self, node):
         board = node.state.to_monopoly_board()
+        sims = 0
 
-        while not board.is_terminal():
+        while not board.is_terminal() and sims < self.max_simulations:
             legal_actions = board.get_legal_actions()
 
             if legal_actions:
@@ -102,6 +104,8 @@ class MCTS:
                 # if the player cannot pay: player first sells hotels/houses on most expensive properties, then mortgages most expensive properties until they have enough money
                 
                 board.perform_action(action)
+
+            sims += 1
 
         # TO DO: PERHAPS DELETE STATE COPY AFTER USING IN SIMULATION (WE DON'T NEED IT ANYMORE)
         return board.calculate_reward()

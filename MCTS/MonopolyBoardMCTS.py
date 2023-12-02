@@ -467,7 +467,7 @@ class MonopolyBoardMCTS:
         a_roll = random.randint(1, 6)
         b_roll = random.randint(1, 6)
         dice_roll = a_roll + b_roll
-
+ 
         # if the player is in jail
         if player.in_jail:
             player.turns_in_jail += 1
@@ -484,10 +484,12 @@ class MonopolyBoardMCTS:
                     self.raise_funds(player, 50)
                 
                 player.in_jail = False
+                player.turns_in_jail = 0
 
             # decide whether or not to leave jail before 3 rounds
             elif self.strategy.decide_to_leave_jail(player):
                 player.in_jail = False
+                player.turns_in_jail = 0
 
             # not leaving jail so turn is over
             else:

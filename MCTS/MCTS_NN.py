@@ -3,7 +3,6 @@ import random
 import copy
 from Node import Node
 from State import State
-from StatePreprocessor import StatePreprocessor
 from NN import NN
 from tqdm import tqdm
 import torch.optim as optim
@@ -18,7 +17,6 @@ class MCTS:
         self.q_network = NN(input_size=state_size, output_size=len(root_state.get_legal_actions()))
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=0.001)
         self.criterion = nn.MSELoss()
-        self.state_preprocessor = StatePreprocessor(root_state)
 
     def uct(self, node):
         # return infinity for unvisited nodes

@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import copy
 from tqdm import tqdm
 from Node import Node
 from State import State

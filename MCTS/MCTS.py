@@ -154,12 +154,12 @@ class MCTS:
         # update root node to the child node corresponding to best action
         self.root = self.root.get_child_with_action(best_action)
 
-    def run_game(self, max_actions=1000):
+    def run_game(self, max_actions=1000, max_rounds=float('inf')):
         actions = 0
         pbar = tqdm(total=max_actions, desc="Running MCTS game")
 
-        # play game until a maximum number of actions or game has ended
-        while actions < max_actions and not self.root.is_terminal():
+        # play game until a maximum number of actions/rounds or game has ended
+        while actions < max_actions and self.root.state.rounds < max_rounds and not self.root.is_terminal():
             self.run()
             actions += 1
             pbar.update(1)

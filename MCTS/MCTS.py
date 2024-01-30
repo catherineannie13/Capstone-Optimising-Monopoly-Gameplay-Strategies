@@ -166,5 +166,13 @@ class MCTS:
 
         pbar.close()
 
+    def run_game_quiet(self,  max_actions=1000, max_rounds=float('inf')):
+        actions = 0
+        
+        # play game until a maximum number of actions/rounds or game has ended
+        while actions < max_actions and self.root.state.rounds < max_rounds and not self.root.is_terminal():
+            self.run()
+            actions += 1
+
 class GameLogicError(Exception):
     pass

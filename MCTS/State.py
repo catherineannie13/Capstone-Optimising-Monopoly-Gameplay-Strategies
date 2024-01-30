@@ -8,6 +8,8 @@ class State:
         self.properties = []
         self.stations = []
         self.utilities = []
+        self.agent_wealth = 0
+        self.other_players_wealth = []
 
     def from_monopoly_board(self, board):
         self.rounds = board.rounds
@@ -41,6 +43,9 @@ class State:
                 self.utilities.append([utility.owner.name, utility.is_mortgaged])
             else:
                 self.utilities.append([None, utility.is_mortgaged])
+
+        self.agent_wealth = board.agent.wealth()
+        self.other_players_wealth = [player.wealth() for player in board.other_players]
 
     def to_monopoly_board(self):
         # reconstruction of Monopoly board

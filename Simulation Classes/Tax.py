@@ -84,7 +84,7 @@ class Tax:
         """
         if self.name == "Income Tax":
             base = self.amount
-            alternative = 0.1 * player.wealth()
+            alternative = int(0.1 * player.wealth())
             return min([base, alternative])
         else:
             return self.amount

@@ -121,7 +121,7 @@ class Station:
         float
             The mortgage price of the property.
         """
-        return self.price/2
+        return int(self.price/2)
     
     def calculate_unmortgage_price(self):
         """
@@ -137,4 +137,4 @@ class Station:
         float
             The price to unmortgage this property.
         """
-        return (self.price/2)*1.1
+        return int((self.price/2)*1.1)

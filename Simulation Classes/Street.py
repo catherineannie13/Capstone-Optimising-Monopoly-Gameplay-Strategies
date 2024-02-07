@@ -165,7 +165,7 @@ class Street:
         float
             The mortgage price of the property.
         """
-        return self.price/2
+        return int(self.price/2)
 
     def calculate_house_sale_value(self):
         """
@@ -180,7 +180,7 @@ class Street:
         float
             The house sale value of the property.
         """
-        return self.house_price/2
+        return int(self.house_price/2)
     
     def calculate_unmortgage_price(self):
         """
@@ -196,4 +196,4 @@ class Street:
         float
             The price to unmortgage this property.
         """
-        return (self.price/2)*1.1
+        return int((self.price/2)*1.1)

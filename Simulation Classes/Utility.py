@@ -103,7 +103,7 @@ class Utility:
         """
         if self.owner:
             multipler = self.rent_multipliers[utilities_owned - 1]
-            return multipler * dice_roll
+            return int(multipler * dice_roll)
         else:
             return 0
         
@@ -120,7 +120,7 @@ class Utility:
         float
             The mortgage price of the property.
         """
-        return self.price/2
+        return int(self.price/2)
     
     def calculate_unmortgage_price(self):
         """
@@ -136,4 +136,4 @@ class Utility:
         float
             The price to unmortgage this property.
         """
-        return (self.price/2)*1.1
+        return int((self.price/2)*1.1)

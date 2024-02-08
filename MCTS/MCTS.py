@@ -162,7 +162,7 @@ class MCTS:
         while actions < max_actions and self.root.state.rounds < max_rounds and not self.root.is_terminal():
             self.run()
             actions += 1
-            pbar.update(1)
+            pbar.update(1) 
 
         pbar.close()
 

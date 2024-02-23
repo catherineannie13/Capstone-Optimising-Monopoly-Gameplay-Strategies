@@ -12,6 +12,17 @@ This study presents an exploration into optimising gameplay strategies for Monop
 │   ├── ExpectedRent.ipynb\
 │   └── PaybackPeriods.ipynb\
 ├── Main\
+│   └── Parsed Results\
+│   │   ├── build.json\
+│   │   ├── build_hotel.json\
+│   │   ├── build_house.json\
+│   │   ├── jail.json\
+│   │   ├── mortgage.json\
+│   │   ├── purchase.json\
+│   │   ├── sell.json\
+│   │   ├── sell_hotel.json\
+│   │   ├── sell_house.json\
+│   │   └── unmortgage.json\
 │   ├── GridSearch_BaseStrategy.json\
 │   ├── GridSearch_RandomStrategy.json\
 │   ├── Hyperparameter_Search.ipynb\
@@ -28,18 +39,7 @@ This study presents an exploration into optimising gameplay strategies for Monop
 │   ├── MCTS_BaseStrategy_MaxRounds20_5000_game_outcomes.json\
 │   ├── MCTS_BaseStrategy_MaxRounds20_5000_node_actions_1.json\
 │   ├── MCTS_BaseStrategy_MaxRounds20_5000_node_actions_2.json\
-│   ├── MCTS_RandomStrategy_100_game_outcomes.json\
-│   └── Parsed Results\
-│       ├── build.json\
-│       ├── build_hotel.json\
-│       ├── build_house.json\
-│       ├── jail.json\
-│       ├── mortgage.json\
-│       ├── purchase.json\
-│       ├── sell.json\
-│       ├── sell_hotel.json\
-│       ├── sell_house.json\
-│       └── unmortgage.json\
+│   └── MCTS_RandomStrategy_100_game_outcomes.json\
 ├── MCTS\
 │   ├── Examples\
 │   │   ├── MCTSExample.ipynb\
@@ -50,7 +50,6 @@ This study presents an exploration into optimising gameplay strategies for Monop
 │   ├── NN.py\
 │   ├── Node.py\
 │   └── State.py\
-├── README.md\
 ├── Simulation Classes\
 │   ├── Chance.py\
 │   ├── CommunityChest.py\

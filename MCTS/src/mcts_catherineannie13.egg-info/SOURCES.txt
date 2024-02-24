@@ -1,0 +1,14 @@
+LICENSE
+README.md
+pyproject.toml
+src/mcts/MCTS.py
+src/mcts/MCTS_NN.py
+src/mcts/MonopolyBoardMCTS.py
+src/mcts/NN.py
+src/mcts/Node.py
+src/mcts/State.py
+src/mcts/__init__.py
+src/mcts_catherineannie13.egg-info/PKG-INFO
+src/mcts_catherineannie13.egg-info/SOURCES.txt
+src/mcts_catherineannie13.egg-info/dependency_links.txt
+src/mcts_catherineannie13.egg-info/top_level.txt

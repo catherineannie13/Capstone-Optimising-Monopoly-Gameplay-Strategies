@@ -1,6 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./Simulation Classes Py",
-        "./Simulation Classes"
+        "./Simulation_Classes"
     ]
 }

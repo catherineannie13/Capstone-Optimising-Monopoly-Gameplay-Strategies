@@ -732,7 +732,6 @@ class MonopolyBoardMCTS:
             player.receive(150)
 
         else:
-            # TO DO: RAISE CARD TYPE ERROR (AND IN ORIGINAL MONOPOLYBOARD CLASS)
             return
             
     def perform_community_chest(self, player):
@@ -822,7 +821,6 @@ class MonopolyBoardMCTS:
             player.receive(100)
         
         else:
-            # TO DO: RAISE CARD TYPE ERROR (AND IN ORIGINAL MONOPOLYBOARD CLASS)
             return
 
     def handle_property(self, player, space, dice_roll = 0):
@@ -913,8 +911,6 @@ class MonopolyBoardMCTS:
                 player.pay(cost)
 
             # when all houses/hotels are sold & properties mortgaged, player goes bankrupt
-            # TO DO: PLAYER WILL NOT GO BANKRUPT IN THE CASE THAT THEY WANT TO PURCHASE 
-            # SOMETHING ELSE WITH THE MONEY RATHER THAN PAY SOMEONE/BANK
             else:
                 player.bankrupt = True
 
@@ -1000,7 +996,22 @@ class MonopolyBoardMCTS:
         return legal_actions
 
     def perform_action(self, action):
-        # TO DO: IF A PLAYER OWES MONEY, PAY IT OFF WITH MONEY THEY GET FROM MORTGAGING/SELLING HOUSES
+        """
+        This method performs various actions based on the given action string. Actions include 
+        unmortgaging properties, mortgaging properties, selling houses, buying houses, using 
+        "Get Out of Jail Free" card, paying to leave jail, purchasing properties, and paying 
+        owed money. At the end of the player's turn, it checks if the player rolled doubles 
+        and continues the turn if so, otherwise it proceeds to other players' turns.
+
+        Parameters
+        ----------
+        action : str
+            The action to be performed.
+
+        Returns
+        -------
+        None
+        """
         # unmortgage property
         if action.startswith("Unmortgage"):
             property_name = action[len("Unmortgage"):].strip()
@@ -1095,7 +1106,7 @@ class MonopolyBoardMCTS:
 
             for recipient, amount in self.agent.money_owed.items():
 
-                # money owed to another player is payed if possible
+                # money owed to another player is paid if possible
                 if recipient:
                     if self.agent.money >= amount:
                         self.agent.pay(amount)
@@ -1104,7 +1115,7 @@ class MonopolyBoardMCTS:
                     else:
                         pass
 
-                # money owed to the bank is payed if possible
+                # money owed to the bank is paid if possible
                 else:
                     if self.agent.money >= amount:
                         self.agent.pay(amount)
@@ -1133,88 +1144,111 @@ class MonopolyBoardMCTS:
                 return
 
     def agent_turn(self):
-        # player rolls the dice
-        a_roll = random.randint(1, 6)
-        b_roll = random.randint(1, 6)
-        dice_roll = a_roll + b_roll
-
-        if self.agent.in_jail:
-            self.agent.turns_in_jail += 1
-
-            if self.agent.turns_in_jail > 2:
-                if a_roll == b_roll:
-                    self.agent.in_jail = False
-                    self.agent.turns_in_jail = 0
-                else:
-                    return
-                    
-        if a_roll == b_roll:
-            self.agent.num_doubles += 1
-
-        # go to jail if third double in a row and end turn
-        if self.agent.num_doubles > 2:
-            self.agent.position = 10
-            self.agent.in_jail = True
-            self.agent.num_doubles = 0
-            self.agent.double_rolled = False
-            return
+            """
+            Simulates a player's turn in the Monopoly game.
+            This method handles the player's actions during their turn, including rolling the dice,
+            moving the player's position, and performing actions based on the type of space they land on.
             
-        # player moves the number of spaces shown on the two dice combined
-        previous_position = self.agent.position
-        self.agent.move(dice_roll)
-        new_position = self.agent.position
-        space = self.board[new_position]
-
-        # if the player passed go, collect the Go income
-        if previous_position > new_position:
-            self.agent.receive(self.board[0].income)
-
-        # handle street property
-        if space.type == "Street":
-            self.handle_property_agent(space)
-
-        # handle station property
-        elif space.type == "Station":
-            self.handle_property_agent(space)
-
-        # handle utility property
-        elif space.type == "Utility":
-            self.handle_property_agent(space, dice_roll)
-
-        # handle chance
-        elif space.type == "Chance":
-            self.perform_chance_agent(dice_roll)
-
-        # handle community chest
-        elif space.type == "Community Chest":
-            self.perform_community_chest_agent()
-
-        # player pays tax if possible, otherwise they owe the money and must pay at next 'move'/child node
-        elif space.type == "Tax":
-            tax = space.calculate_tax(self.agent)
-            self.handle_bank_payment_agent(tax)
-
-        # no action is taken if the player lands on Go
-        elif space.type == "Go":
-            pass
+            Returns
+            -------
+            None
+            """
             
-        # no action is taken if the player lands on jail since they are just visiting
-        elif space.type == "Jail":
-            pass
+            # player rolls the dice
+            a_roll = random.randint(1, 6)
+            b_roll = random.randint(1, 6)
+            dice_roll = a_roll + b_roll
 
-        # no action is taken if the player lands on free parking
-        elif space.type == "Free Parking":
-            pass
+            if self.agent.in_jail:
+                self.agent.turns_in_jail += 1
 
-        # player goes to jail
-        elif space.type == "Go To Jail":
-            self.agent.position = 10
-            self.agent.in_jail = True
+                if self.agent.turns_in_jail > 2:
+                    if a_roll == b_roll:
+                        self.agent.in_jail = False
+                        self.agent.turns_in_jail = 0
+                    else:
+                        return
+                        
+            if a_roll == b_roll:
+                self.agent.num_doubles += 1
 
-        else:
-            raise TypeError("Space of incorrect type found on board. Type: " + space.type)
+            # go to jail if third double in a row and end turn
+            if self.agent.num_doubles > 2:
+                self.agent.position = 10
+                self.agent.in_jail = True
+                self.agent.num_doubles = 0
+                self.agent.double_rolled = False
+                return
+                
+            # player moves the number of spaces shown on the two dice combined
+            previous_position = self.agent.position
+            self.agent.move(dice_roll)
+            new_position = self.agent.position
+            space = self.board[new_position]
+
+            # if the player passed go, collect the Go income
+            if previous_position > new_position:
+                self.agent.receive(self.board[0].income)
+
+            # handle street property
+            if space.type == "Street":
+                self.handle_property_agent(space)
+
+            # handle station property
+            elif space.type == "Station":
+                self.handle_property_agent(space)
+
+            # handle utility property
+            elif space.type == "Utility":
+                self.handle_property_agent(space, dice_roll)
+
+            # handle chance
+            elif space.type == "Chance":
+                self.perform_chance_agent(dice_roll)
+
+            # handle community chest
+            elif space.type == "Community Chest":
+                self.perform_community_chest_agent()
+
+            # player pays tax if possible, otherwise they owe the money and must pay at next 'move'/child node
+            elif space.type == "Tax":
+                tax = space.calculate_tax(self.agent)
+                self.handle_bank_payment_agent(tax)
+
+            # no action is taken if the player lands on Go
+            elif space.type == "Go":
+                pass
+                
+            # no action is taken if the player lands on jail since they are just visiting
+            elif space.type == "Jail":
+                pass
+
+            # no action is taken if the player lands on free parking
+            elif space.type == "Free Parking":
+                pass
+
+            # player goes to jail
+            elif space.type == "Go To Jail":
+                self.agent.position = 10
+                self.agent.in_jail = True
+
+            else:
+                raise TypeError("Space of incorrect type found on board. Type: " + space.type)
         
     def perform_chance_agent(self, dice_roll):
+        """
+        This method handles the actions of a player when they draw a chance card.
+        
+        Parameters
+        ----------
+        dice_roll: int
+            The value of the dice roll.
+        
+        Returns
+        -------
+        None
+        """
+
         chance_card = self.chance.choose_card()
 
         if chance_card == "Advance to Go.":
@@ -1313,7 +1347,6 @@ class MonopolyBoardMCTS:
                 self.perform_community_chest_agent()
 
             else:
-                # TO DO: ADD RAISE ERROR HERE
                 pass
 
         elif chance_card == "Go to Jail. Go directly to Jail, do not pass Go, do not collect £200.":
@@ -1347,73 +1380,97 @@ class MonopolyBoardMCTS:
             self.agent.receive(150)
 
         else:
-            # TO DO: RAISE CARD TYPE ERROR (AND ABOVE FOR OTHER PLAYERS)
             return
         
     def perform_community_chest_agent(self):
-        community_chest_card = self.community_chest.choose_card()
+            """
+            This method performs the action associated with a community chest card for the agent player.
+            
+            Parameters
+            ----------
+            None
+            
+            Returns
+            -------
+            None
+            """
+            
+            community_chest_card = self.community_chest.choose_card()
 
-        if community_chest_card == "Advance to Go.":
-            self.agent.position = 0
-            self.agent.receive(200)
+            if community_chest_card == "Advance to Go.":
+                self.agent.position = 0
+                self.agent.receive(200)
 
-        elif community_chest_card == "Bank error in your favor. Collect £200.":
-            self.agent.receive(200)
-        
-        elif community_chest_card == "Doctor’s fee. Pay £50.":
-            self.handle_bank_payment_agent(50)
-        
-        elif community_chest_card == "From sale of stock you get £50.":
-            self.agent.receive(50)
-        
-        elif community_chest_card == "Get Out of Jail Free.":
-            self.agent.jail_cards += 1
-        
-        elif community_chest_card == "Go to Jail. Go directly to jail, do not pass Go, do not collect £200.":
-            self.agent.position = 10
-            self.agent.in_jail = True
-        
-        elif community_chest_card == "Holiday fund matures. Receive £100.":
-            self.agent.receive(100)
-        
-        elif community_chest_card == "Income tax refund. Collect £20.":
-            self.agent.receive(20)
-        
-        elif community_chest_card == "It is your birthday. Collect £10 from every player.":
-            for opponent in self.players:
-                if opponent.money >= 10:
-                    self.agent.receive(10)
-                    opponent.pay(10)
-                else:
-                    self.raise_funds(opponent, 10)
-        
-        elif community_chest_card == "Life insurance matures. Collect £100.":
-            self.agent.receive(100)
-        
-        elif community_chest_card == "Pay hospital fees of £100.":
-            self.handle_bank_payment_agent(100)
-        
-        elif community_chest_card == "Pay school fees of £50.":
-            self.handle_bank_payment_agent(50)
-        
-        elif community_chest_card == "Receive £25 consultancy fee.":
-            self.agent.receive(25)
-        
-        elif community_chest_card == "You are assessed for street repairs. £40 per house. £115 per hotel.":
-            cost = 40*self.agent.houses + 115*self.agent.hotels
-            self.handle_bank_payment_agent(cost)
-        
-        elif community_chest_card == "You have won second prize in a beauty contest. Collect £10.":
-            self.agent.receive(10)
-        
-        elif community_chest_card == "You inherit £100.":
-            self.agent.receive(100)
-        
-        else:
-            # TO DO: RAISE CARD TYPE ERROR (AND ABOVE FOR OTHER PLAYERS)
-            return
+            elif community_chest_card == "Bank error in your favor. Collect £200.":
+                self.agent.receive(200)
+            
+            elif community_chest_card == "Doctor’s fee. Pay £50.":
+                self.handle_bank_payment_agent(50)
+            
+            elif community_chest_card == "From sale of stock you get £50.":
+                self.agent.receive(50)
+            
+            elif community_chest_card == "Get Out of Jail Free.":
+                self.agent.jail_cards += 1
+            
+            elif community_chest_card == "Go to Jail. Go directly to jail, do not pass Go, do not collect £200.":
+                self.agent.position = 10
+                self.agent.in_jail = True
+            
+            elif community_chest_card == "Holiday fund matures. Receive £100.":
+                self.agent.receive(100)
+            
+            elif community_chest_card == "Income tax refund. Collect £20.":
+                self.agent.receive(20)
+            
+            elif community_chest_card == "It is your birthday. Collect £10 from every player.":
+                for opponent in self.players:
+                    if opponent.money >= 10:
+                        self.agent.receive(10)
+                        opponent.pay(10)
+                    else:
+                        self.raise_funds(opponent, 10)
+            
+            elif community_chest_card == "Life insurance matures. Collect £100.":
+                self.agent.receive(100)
+            
+            elif community_chest_card == "Pay hospital fees of £100.":
+                self.handle_bank_payment_agent(100)
+            
+            elif community_chest_card == "Pay school fees of £50.":
+                self.handle_bank_payment_agent(50)
+            
+            elif community_chest_card == "Receive £25 consultancy fee.":
+                self.agent.receive(25)
+            
+            elif community_chest_card == "You are assessed for street repairs. £40 per house. £115 per hotel.":
+                cost = 40*self.agent.houses + 115*self.agent.hotels
+                self.handle_bank_payment_agent(cost)
+            
+            elif community_chest_card == "You have won second prize in a beauty contest. Collect £10.":
+                self.agent.receive(10)
+            
+            elif community_chest_card == "You inherit £100.":
+                self.agent.receive(100)
+            
+            else:
+                return
         
     def handle_property_agent(self, space, dice_roll = 0):
+        """
+        This method handles the payment of rent on a property by the agent player.
+        
+        Parameters
+        ----------
+        space: obj
+            An instance of the class representing the property space.
+        dice_roll: int, optional
+            The value of the dice roll, used for calculating rent on utility properties.
+        
+        Returns
+        -------
+        None
+        """
         # if there is an owner, pay calculated rent on property if possible
         if space.owner:
             if space.type == "Street":
@@ -1439,12 +1496,38 @@ class MonopolyBoardMCTS:
             return
         
     def handle_bank_payment_agent(self, amount):
+        """
+        This method handles a bank payment made by the agent player.
+        
+        Parameters
+        ----------
+        amount: int
+            The amount of money to be paid to the bank.
+        
+        Returns
+        -------
+        None
+        """
         if self.agent.money >= amount:
             self.agent.pay(amount)
         else:
             self.agent.money_owed[None] = amount
 
     def handle_opponent_payment_agent(self, amount, opponent):
+        """
+        This method handles a payment made by the agent player to an opponent player.
+        
+        Parameters
+        ----------
+        amount: int
+            The amount of money to be paid to the opponent player.
+        opponent: obj
+            An instance of the class representing the opponent player.
+        
+        Returns
+        -------
+        None
+        """
         if self.agent.money >= amount:
             self.agent.pay(amount)
             opponent.receive(amount)
@@ -1452,12 +1535,28 @@ class MonopolyBoardMCTS:
             self.agent.money_owed[opponent] = amount
 
     def is_terminal(self):
+        """
+        This method checks if the current game state is a terminal state.
+        
+        Returns
+        -------
+        bool
+            True if the game state is terminal, False otherwise.
+        """
         if self.agent.bankrupt or all([other_player.bankrupt for other_player in self.other_players]):
             return True
         else:
             return False
         
     def calculate_reward(self):
+        """
+        This method calculates the reward for the agent player.
+        
+        Returns
+        -------
+        float
+            The calculated reward value.
+        """
         if self.agent.bankrupt:
             return 0
         else:

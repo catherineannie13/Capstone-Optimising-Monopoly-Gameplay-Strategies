@@ -59,7 +59,6 @@ class Strategy:
         bool
             True/False value for whether the player should purchase the property or not.
         """
-        # TO DO: ADD OPTION TO MORTGAGE/SELL HOUSES TO PURCHASE A PROPERTY
         if player.money >= space.price:
 
             # buy the property if they already have one in that set OR if they have 2 or fewer properties in total
@@ -203,7 +202,6 @@ class Strategy:
         bool
             True/False value that denotes whether or not the player should choose to leave jail.
         """
-        # TO DO: ADD OPTION TO MORTGAGE/SELL HOUSES TO LEAVE JAIL
         if player.jail_cards > 0:
             player.jail_cards -= 1
             return True
@@ -271,7 +269,6 @@ class Strategy:
         -------
         None
         """
-        # TO DO: ADD OPTION TO MORTGAGE/SELL HOUSES TO BUILD ON PROPERTIES
         # look through all property groups
         for group, properties in property_sets.items():
             player_properties = player.property_sets[group]

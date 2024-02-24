@@ -899,7 +899,5 @@ class MonopolyBoard:
                 player.pay(cost)
 
             # when all houses/hotels are sold & properties mortgaged, player goes bankrupt
-            # TO DO: PLAYER WILL NOT GO BANKRUPT IN THE CASE THAT THEY WANT TO PURCHASE 
-            # SOMETHING ELSE WITH THE MONEY RATHER THAN PAY SOMEONE/BANK
             else:
                 player.bankrupt = True

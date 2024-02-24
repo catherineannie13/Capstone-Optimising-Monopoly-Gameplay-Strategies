@@ -9,7 +9,49 @@ import torch.optim as optim
 import torch.nn as nn
 import torch
 class MCTS:
-    def __init__(self, root_state, max_iterations, exploration_weight = 1, state_size = 1000):
+    """
+    Monte Carlo Tree Search (MCTS) algorithm for decision-making in Monopoly gameplay.
+
+    Attributes
+    ----------
+    root : Node
+        The root node of the search tree.
+    max_iterations : int
+        The maximum number of iterations for the search algorithm.
+    best_actions : list
+        A list to store the best actions found during the search.
+    exploration_weight : float, optional
+        The exploration weight parameter for the UCT (Upper Confidence Bound for Trees) formula.
+    q_network : NN
+        The neural network used for Q-value estimation.
+    optimizer : torch.optim.Optimizer
+        The optimizer used for updating the neural network parameters.
+    criterion : torch.nn.modules.loss._Loss
+        The loss function used for training the neural network.
+
+    Methods
+    -------
+    uct(node)
+        Calculates the UCT (Upper Confidence Bound for Trees) value for a given node.
+    select_best_action(node)
+        Selects the best action based on the UCT values of the child nodes.
+    selection(node)
+        Performs the selection phase of the MCTS algorithm.
+    expansion(node)
+        Performs the expansion phase of the MCTS algorithm.
+    simulation(node)
+        Performs the simulation phase of the MCTS algorithm.
+    backpropagation(node, reward)
+        Performs the backpropagation phase of the MCTS algorithm.
+    search()
+        Executes the MCTS algorithm.
+    run()
+        Runs a single iteration of the MCTS algorithm.
+    run_game(max_actions=1000)
+        Runs the MCTS algorithm for a specified number of actions or until the game ends.
+    """
+
+    def __init__(self, root_state, max_iterations, exploration_weight=1, state_size=1000):
         self.root = Node(root_state)
         self.max_iterations = max_iterations
         self.best_actions = []
@@ -19,25 +61,47 @@ class MCTS:
         self.criterion = nn.MSELoss()
 
     def uct(self, node):
-        # return infinity for unvisited nodes
+        """
+        Calculates the UCT (Upper Confidence Bound for Trees) value for a given node.
+
+        Parameters
+        ----------
+        node : Node
+            The node for which to calculate the UCT value.
+
+        Returns
+        -------
+        float
+            The UCT value for the given node.
+        """
         if node.visits == 0:
             return float('inf')
-        
-        # 2 components of UCT
-        exploitation = node.total_reward/node.visits
-        exploration = self.exploration_weight*(np.log(node.parent.visits)/node.visits)**0.5
+
+        exploitation = node.total_reward / node.visits
+        exploration = self.exploration_weight * (np.log(node.parent.visits) / node.visits) ** 0.5
 
         return exploitation + exploration
-    
+
     def select_best_action(self, node):
+        """
+        Selects the best action based on the UCT values of the child nodes.
+
+        Parameters
+        ----------
+        node : Node
+            The node for which to select the best action.
+
+        Returns
+        -------
+        object
+            The best action to take from the given node.
+        """
         best_action = None
         best_value = float('-inf')
 
-        # find the child node with the highest UCT value
         for child in node.children:
             uct_value = self.uct(child)
 
-            # update best child node choice
             if uct_value > best_value:
                 best_action = child.action
                 best_value = uct_value
@@ -45,14 +109,25 @@ class MCTS:
         return best_action
 
     def selection(self, node):
-        # convert state back to Monopoly board to get legal actions for that state
+        """
+        Performs the selection phase of the MCTS algorithm.
+
+        Parameters
+        ----------
+        node : Node
+            The node from which to start the selection.
+
+        Returns
+        -------
+        Node
+            The selected node for expansion or simulation.
+        """
         board = node.state.to_monopoly_board()
         legal_actions = board.get_legal_actions()
 
-        # traverse tree until terminal node or node with unexplored children is reached
         while not node.is_terminal() and len(node.children) == len(legal_actions):
             best_action = self.select_best_action(node)
-            
+
             if best_action:
                 node = node.get_child_with_action(best_action)
             else:
@@ -61,118 +136,154 @@ class MCTS:
         return node
 
     def expansion(self, node):
-        # convert state back to Monopoly board to get legal actions for that state
+        """
+        Performs the expansion phase of the MCTS algorithm.
+
+        Parameters
+        ----------
+        node : Node
+            The node to expand.
+
+        Returns
+        -------
+        Node
+            The child node created during the expansion.
+        """
         board = node.state.to_monopoly_board()
         legal_actions = board.get_legal_actions()
 
-        # get untried actions
         children_actions = [child.action for child in node.children]
         untried_actions = [action for action in legal_actions if action not in children_actions]
 
-        # if there are untried actions, randomly choose one & create child node
         if untried_actions:
             action = random.choice(untried_actions)
             board.perform_action(action)
 
-            # create new state from Monopoly board for child node
             new_state = State()
             new_state.from_monopoly_board(board)
 
-            # create child node for new action
-            child = Node(new_state, action, parent = node)
+            child = Node(new_state, action, parent=node)
             node.children.append(child)
 
             return child
-        
-        # if all actions have been tried, use UCT to choose child
-        else:
 
-            # TO DO: maybe there is a better way to keep track of the child node with the best action
+        else:
             best_action = self.select_best_action(node)
-            if not best_action: # PERHAPS NOT NECESSARY
-                return node # PERHAPS NOT NECESSARY
+            if not best_action:
+                return node
             return node.get_child_with_action(best_action)
 
     def simulation(self, node):
+        """
+        Performs the simulation phase of the MCTS algorithm.
+
+        Parameters
+        ----------
+        node : Node
+            The node to simulate from.
+
+        Returns
+        -------
+        float
+            The reward obtained from the simulation.
+        """
         board = node.state.to_monopoly_board()
 
         while not board.is_terminal():
             legal_actions = board.get_legal_actions()
 
             if legal_actions:
-                # use neural network to predict Q-values
                 state = State()
                 state.to_monopoly_board(board)
                 state_tensor = torch.tensor(state.preprocess_state()).float().unsqueeze(0)
                 q_values = self.q_network(state_tensor).detach().numpy()
 
-                # select and perform action with highest Q-value
                 action = np.argmax(q_values)
                 board.perform_action(action)
 
         return board.calculate_reward()
 
     def backpropagation(self, node, reward):
+        """
+        Performs the backpropagation phase of the MCTS algorithm.
+
+        Parameters
+        ----------
+        node : Node
+            The node to start the backpropagation from.
+        reward : float
+            The reward obtained from the simulation.
+        """
         while node is not None:
             state_tensor = torch.tensor(node.state.preprocess_state()).float().unsqueeze(0)
             q_values = self.q_network(state_tensor)
 
-            # choose best action based on Q-values
             best_action = self.select_best_action(node)
             best_action_index = node.state.get_legal_actions().index(best_action)
 
-            # Q-learning update
             q_values[0, best_action_index] += reward
 
-            # compute loss and perform gradient descent
             target_q_values = torch.tensor(q_values).float()
             loss = self.criterion(self.q_network(state_tensor), target_q_values)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
 
-            # traverse up the tree until root node is reached
             node = node.parent
 
     def search(self):
+        """
+        Executes the MCTS algorithm.
+
+        Returns
+        -------
+        object
+            The best action to take from the root node.
+        """
         for _ in range(self.max_iterations):
             node = self.root
 
-            # selection phase
             node = self.selection(node)
 
-            # expansion phase
             if not node.is_terminal():
                 node = self.expansion(node)
 
-            # simulation phase
             reward = self.simulation(node)
 
-            # backpropagation phase
             self.backpropagation(node, reward)
 
-        # select the best action to take from the root node
         best_action = self.select_best_action(self.root)
 
         return best_action
-    
+
     def run(self):
+        """
+        Runs a single iteration of the MCTS algorithm.
+        """
         best_action = self.search()
 
-        # if there is no best action, there is no action choice at all
-        if not best_action: # PERHAPS NOT NECESSARY
-            return # PERHAPS NOT NECESSARY
-        
-        self.best_actions.append(best_action)
+        if not best_action:
+            return
 
-        # update root node to the child node corresponding to best action
+        self.best_actions.append(best_action)
         self.root = self.root.get_child_with_action(best_action)
 
     def run_game(self, max_actions=1000):
+        """
+        Runs the MCTS algorithm for a specified number of actions or until the game ends.
+
+        Parameters
+        ----------
+        max_actions : int, optional
+            The maximum number of actions to take.
+
+        Returns
+        -------
+        None
+        """
         actions = 0
         pbar = tqdm(total=max_actions, desc="Running MCTS game")
 
-        # play game until a maximum number of actions or game has ended
         while actions < max_actions and not self.root.is_terminal():
             self.run()
             actions += 1

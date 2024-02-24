@@ -65,7 +65,6 @@ class Player:
         self.utilities = []
         self.property_sets = {"brown":[], "lightblue":[], "pink":[], "orange":[], 
                               "red":[], "yellow":[], "green":[], "darkblue":[]}
-        #self._bankrupt = False
         self.bankrupt = False
         self.in_jail = False
         self.turns_in_jail = 0
@@ -97,17 +96,6 @@ class Player:
             \n They hold the following utilities: {[utility.name for utility in self.utilities]}\
             \n The player has {self.houses} houses and {self.hotels} hotels \
             \n The player is currently {"in" if self.in_jail else "not in"} jail.'
-    
-    #@property
-    #def bankrupt(self):
-    #    return self._bankrupt
-
-    #@bankrupt.setter
-    #def bankrupt(self, value):
-    #    # TO DO: CHANGE THIS TO WHATEVER ACTION TO PERFORM WHEN A PLAYER GOES BANKRUPT
-    #    if self._bankrupt is False and value is True:
-    #        print(f'Player {self.name} has gone bankrupt.')
-    #    self._bankrupt = value
 
     def move(self, steps):
         """
@@ -246,6 +234,8 @@ class Player:
         float
             The calculated wealth of the player.
         """
+
+        # Calculate the value of the player's assets individually
         street_wealth = sum([street.price if street.is_mortgaged == False else 0 for street in self.properties])
         street_mortgaged_wealth = sum([street.calculate_mortgage_value() if street.is_mortgaged else 0 for street in self.properties])
         station_wealth = sum([station.price for station in self.stations])

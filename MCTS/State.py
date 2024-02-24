@@ -1,6 +1,37 @@
 from Player import Player
 from MonopolyBoardMCTS import MonopolyBoardMCTS
 class State:
+    """
+    Represents the state of the Monopoly game board.
+
+    Attributes
+    ----------
+    rounds : int
+        The number of rounds played.
+    agent : list
+        Information about the agent player.
+    other_players : list
+        Information about the other players.
+    properties : list
+        Information about the properties on the board.
+    stations : list
+        Information about the stations on the board.
+    utilities : list
+        Information about the utilities on the board.
+    agent_wealth : int
+        The wealth of the agent player.
+    other_players_wealth : list
+        The wealth of the other players.
+
+    Methods
+    -------
+    from_monopoly_board(board)
+        Converts a Monopoly board object to a State object.
+    to_monopoly_board()
+        Converts a State object to a Monopoly board object.
+    preprocess_state()
+        Preprocesses the state representation for the Monte Carlo Tree Search algorithm.
+    """
     def __init__(self):
         self.rounds = None
         self.agent = None
@@ -12,6 +43,18 @@ class State:
         self.other_players_wealth = []
 
     def from_monopoly_board(self, board):
+        """
+        Converts a Monopoly board object to a State object.
+
+        Parameters
+        ----------
+        board : MonopolyBoardMCTS
+            The Monopoly board object.
+
+        Returns
+        -------
+        None
+        """
         self.rounds = board.rounds
 
         agent = board.agent
@@ -48,6 +91,14 @@ class State:
         self.other_players_wealth = [player.wealth() for player in board.other_players]
 
     def to_monopoly_board(self):
+        """
+        Converts a State object to a Monopoly board object.
+
+        Returns
+        -------
+        MonopolyBoardMCTS
+            The Monopoly board object.
+        """
         # reconstruction of Monopoly board
         board = MonopolyBoardMCTS()
         board.rounds = self.rounds
@@ -74,9 +125,6 @@ class State:
                 for player in board.players:
                     if player.name == player_name:
                         money_owed_dict[player] = amount
-
-        #if len(money_owed_dict) > 0:
-        #    print('Agent owes money:', self.agent[-1].items())
 
         # add money owed by other players
         for other_player in self.other_players:
@@ -130,9 +178,16 @@ class State:
             board.utilities[idx].is_mortgaged = utility[1]
 
         return board
-    
+
     def preprocess_state(self):
-        # TO DO: ADAPT TO HANDLE BOOLEANS AND STRINGS AND NONETYPES!
+        """
+        Preprocesses the state representation for the Monte Carlo Tree Search algorithm.
+
+        Returns
+        -------
+        list
+            The preprocessed state representation.
+        """
         state_representation = []
         state_representation.append(self.rounds)
         state_representation.extend(self.agent[:-1])

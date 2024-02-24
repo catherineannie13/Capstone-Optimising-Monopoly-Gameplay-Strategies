@@ -1,6 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "./Simulation Classes Py",
-        "./Simulation_Classes"
+        "./Simulation_Classes",
+        "./Simulation_Classes/src/simulation_classes",
+        "./MCTS/src/mcts"
     ]
 }

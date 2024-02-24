@@ -82,7 +82,7 @@ class Strategy:
         
     def decide_sell_houses(self, player, money_needed):
         """
-        This method This method is responsible for determining which houses and hotels a player should sell in 
+        This method is responsible for determining which houses and hotels a player should sell in 
         order to generate the necessary funds to cover their financial requirements. It prioritises selling 
         houses and hotels from property groups that have the most houses and hotels. The method iterates through 
         the player's property sets and evaluates each property group, starting with the one that has the most 

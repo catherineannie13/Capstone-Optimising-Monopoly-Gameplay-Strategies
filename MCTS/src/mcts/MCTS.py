@@ -18,6 +18,29 @@ class MCTS:
         The exploration weight parameter for the UCT formula, by default 1.
     max_simulations : int, optional
         The maximum number of simulations to run during the MCTS algorithm, by default 1000.
+
+    Methods
+    -------
+    uct(node)
+        Calculate the UCT (Upper Confidence Bound for Trees) value for a given node.
+    select_best_action(node)
+        Select the best action to take from a given node based on the UCT values of its children.
+    selection(node)
+        Perform the selection phase of the MCTS algorithm.
+    expansion(node)
+        Perform the expansion phase of the MCTS algorithm.
+    simulation(node)
+        Perform the simulation phase of the MCTS algorithm.
+    backpropagation(node, reward)
+        Perform the backpropagation phase of the MCTS algorithm.
+    search()
+        Run the MCTS algorithm to find the best action to take from the root node.
+    run()
+        Run a single iteration of the MCTS algorithm.
+    run_game(max_actions=1000, max_rounds=float('inf'))
+        Run a game using the MCTS algorithm.
+    run_game_quiet(max_actions=1000, max_rounds=float('inf'))
+        Run a game using the MCTS algorithm without displaying progress.
     """
 
     def __init__(self, root_state, max_iterations, exploration_weight=1, max_simulations=1000):
